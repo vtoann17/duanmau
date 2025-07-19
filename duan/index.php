@@ -51,7 +51,7 @@ session_start();
         <?php if (isset($_SESSION['user'])): ?>
             <li><a href="wishlist.html">Danh mục yêu thích</a></li>
             <?php if ($_SESSION['user']['role'] == 'admin'): ?>
-                <li><a href="admin/">Quản lý cửa hàng</a></li>
+                <li><a href="admin_dashboard.php">Quản lý cửa hàng</a></li>
             <?php endif; ?>
             <li><a href="logout.php">Đăng xuất</a></li>
         <?php else: ?>
