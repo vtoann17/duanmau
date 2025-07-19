@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!doctype html>
 <html class="no-js" lang="en">
 
@@ -35,13 +38,28 @@
                     <div class="col-lg-5 col-md-12">
                         <div class="top_right text-right">
                             <ul>
-                               <li class="top_links"><a href="#">Tài khoản của tôi <i class="ion-chevron-down"></i></a>
-                                    <ul class="dropdown_links">
-                                        <li><a href="wishlist.html">Danh sách yêu thích </a></li>
-                                        <li><a href="login.php">Đăng nhập</a></li>
-                                        <li><a href="dangxuat.php">Đăng xuất  </a></li>
-                                    </ul>
-                                </li> 
+                             <li class="top_links"><a href="#">
+    <?php
+        if (isset($_SESSION['user'])) {
+            echo $_SESSION['user']['role'] == 'admin' ? 'Admin' : $_SESSION['user']['name'];
+        } else {
+            echo 'Tài khoản của tôi';
+        }
+    ?>
+    <i class="ion-chevron-down"></i></a>
+    <ul class="dropdown_links">
+        <?php if (isset($_SESSION['user'])): ?>
+            <li><a href="wishlist.html">Danh mục yêu thích</a></li>
+            <?php if ($_SESSION['user']['role'] == 'admin'): ?>
+                <li><a href="admin/">Quản lý cửa hàng</a></li>
+            <?php endif; ?>
+            <li><a href="logout.php">Đăng xuất</a></li>
+        <?php else: ?>
+            <li><a href="login.php">Đăng nhập</a></li>
+        <?php endif; ?>
+    </ul>
+</li>
+
                             </ul>
                         </div>   
                     </div>

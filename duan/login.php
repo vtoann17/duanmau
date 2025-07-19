@@ -1,3 +1,71 @@
+<?php
+// Đăng ký
+session_start();
+require_once "db_utils.php";
+$db_util = new DB_UTILS();
+
+$error = "";
+$success = "";
+
+if ($_SERVER['REQUEST_METHOD'] === "POST") {
+    // Nhận dữ liệu từ form
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $password = $_POST['matkhau'];
+    $phone = trim($_POST['phone']);
+    $address = trim($_POST['address']);
+    $created = date('Y-m-d H:i:s'); // thời gian hiện tại
+
+    // Kiểm tra dữ liệu
+    if (empty($name) || empty($email) || empty($password) || empty($phone) || empty($address)) {
+        $error = "Vui lòng điền đầy đủ thông tin.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Email không hợp lệ.";
+    } elseif (strlen($password) < 6) {
+        $error = "Mật khẩu ít nhất phải 6 ký tự.";
+    } else {
+        // Kiểm tra email đã tồn tại chưa
+        $exists = $db_util->getOne("SELECT * FROM users WHERE email = ?", [$email]);
+        if ($exists) {
+            $error = "Email đã tồn tại.";
+        } else {
+            // Mã hóa mật khẩu
+            $hashed = password_hash($password, PASSWORD_DEFAULT);
+            $role = 'customer';
+
+            // Thực hiện thêm vào CSDL
+            $db_util->execute(
+                "INSERT INTO users (name, email, password, role, phone, address, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)",
+                [$name, $email, $hashed, $role, $phone, $address, $created]
+            );
+
+            $success = "Đăng ký thành công. Vui lòng đăng nhập!";
+        }
+    }
+}
+//Đăng nhập
+if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['login'])) {
+    $email = trim($_POST['email']);
+    $password = $_POST['matkhau'];
+
+    if (empty($email) || empty($password)) {
+        $error = "Vui lòng nhập đầy đủ email và mật khẩu.";
+    } else {
+        $user = $db_util->getOne("SELECT * FROM users WHERE email = ?", [$email]);
+        if ($user && password_verify($password, $user['password'])) {
+            // Đăng nhập thành công
+            $_SESSION['user'] = $user;
+            $success = "Đăng nhập thành công!";
+            header("Location: index.php"); // hoặc trang dashboard
+            exit;
+        } else {
+            $error = "Email hoặc mật khẩu không đúng.";
+        }
+    }
+}
+?>
+
 <!doctype html>
 <html class="no-js" lang="en">
 
@@ -231,26 +299,28 @@
                 <div class="col-lg-6 col-md-6">
                     <div class="account_form">
                         <h2>Đăng nhập</h2>
-                        <form action="#">
-                            <p>   
-                                <label>Tên hoặc Email <span>*</span></label>
-                                <input type="text">
-                             </p>
-                             <p>   
-                                <label>Mật khẩu <span>*</span></label>
-                                <input type="password">
-                             </p>   
-                            <div class="login_submit">
-                               <a href="#">Quên mật khẩu?</a>
-                                <label for="remember">
-                                    <input id="remember" type="checkbox">
-                                    Nhớ mật khẩu
-                                </label>
-                                <button type="submit">Đăng nhập</button>
-                                
-                            </div>
+                        <form action="" method="post">
+    <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
+    <?php if (!empty($success)) echo "<p style='color:green;'>$success</p>"; ?>
 
-                        </form>
+    <p>   
+        <label>Email <span>*</span></label>
+        <input type="email" name="email" required>
+    </p>
+    <p>   
+        <label>Mật khẩu <span>*</span></label>
+        <input type="password" name="matkhau" required>
+    </p>   
+    <div class="login_submit">
+        <a href="#">Quên mật khẩu?</a>
+        <label for="remember">
+            <input id="remember" type="checkbox">
+            Nhớ mật khẩu
+        </label>
+        <button type="submit" name="login">Đăng nhập</button>
+    </div>
+</form>
+
                      </div>    
                 </div>
                 <!--login area start-->
@@ -259,19 +329,40 @@
                 <div class="col-lg-6 col-md-6">
                     <div class="account_form register">
                         <h2>Đăng kí</h2>
-                        <form action="#">
-                            <p>   
-                                <label>Địa chỉ email  <span>*</span></label>
-                                <input type="text">
-                             </p>
-                             <p>   
-                                <label>Mật khẩu <span>*</span></label>
-                                <input type="password">
-                             </p>
-                            <div class="login_submit">
-                                <button type="submit">Đăng kí</button>
-                            </div>
-                        </form>
+                        <form action="" method="post">
+    <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
+    <?php if (!empty($success)) echo "<p style='color:green;'>$success</p>"; ?>
+
+    <p>   
+        <label>Họ và tên <span>*</span></label>
+        <input type="text" name="name" required />
+    </p>
+
+    <p>   
+        <label>Địa chỉ email <span>*</span></label>
+        <input type="email" name="email" required />
+    </p>
+
+    <p>   
+        <label>Mật khẩu <span>*</span></label>
+        <input type="password" name="matkhau" required />
+    </p>
+
+    <p>   
+        <label>Số điện thoại <span>*</span></label>
+        <input type="text" name="phone" required />
+    </p>
+
+    <p>   
+        <label>Địa chỉ <span>*</span></label>
+        <input type="text" name="address" required />
+    </p>
+
+    <div class="login_submit">
+        <button type="submit">Đăng kí</button>
+    </div>
+</form>
+
                     </div>    
                 </div>
                 <!--register area end-->
