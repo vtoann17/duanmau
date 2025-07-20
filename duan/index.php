@@ -1,5 +1,15 @@
 <?php
 session_start();
+  require_once "./db_utils.php";
+  $db_utils = new DB_UTILS();
+  $dsSanPham = $db_utils->getAll('select * from products');
+//   $dsSanPham = $db_utils->getAll('select * from sanpham  sp left join danhmuc dm on sp.maloai = dm.maloai');
+//  echo "<pre>";
+//   var_dump($dsSanPham);
+//   echo "<pre>";
+//   die;
+
+
 ?>
 <!doctype html>
 <html class="no-js" lang="en">
@@ -51,7 +61,7 @@ session_start();
         <?php if (isset($_SESSION['user'])): ?>
             <li><a href="wishlist.html">Danh mục yêu thích</a></li>
             <?php if ($_SESSION['user']['role'] == 'admin'): ?>
-                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                <li><a href="admin_dashboard.php">Quản lý cửa hàng</a></li>
             <?php endif; ?>
             <li><a href="logout.php">Đăng xuất</a></li>
         <?php else: ?>
@@ -154,7 +164,7 @@ session_start();
                                 <ul>
                                     <li class="active"><a href="index.php">Trang chủ <i class="fa fa-angle-down"></i></a>
                                     </li>
-                                    <li class="mega_items"><a href="products.php">Sản phẩm <i class="fa fa-angle-down"></i></a>
+                                    <li class="mega_items"><a href="shop.html">Sản phẩm <i class="fa fa-angle-down"></i></a>
                                     </li>
                                     <li><a href="blog.php">Blog <i class="fa fa-angle-down"></i></a>
                                     </li>
@@ -319,13 +329,14 @@ session_start();
                 </div>
                  <div class="tab-content">
                       <div class="tab-pane fade show active" id="clothing" role="tabpanel">
-                             <div class="product_container">
-                                <div class="row product_column4">
+                          <div class="product_container">
+                              <div class="row product_column4">
+                                    <?php foreach($dsSanPham as $sanpham): ?>
                                     <div class="col-lg-3">
                                         <div class="single_product">
                                             <div class="product_thumb">
-                                                <a class="primary_img" href="product-details.php"><img src="assets/img/product/product21.jpg" alt=""></a>
-                                                <a class="secondary_img" href="product-details.php"><img src="assets/img/product/product22.jpg" alt=""></a>
+                                                <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
+                                                <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
 
                                                 <div class="quick_button">
                                                     <a href="#" title="quick_view">Xem sản phẩm</a>
@@ -337,12 +348,13 @@ session_start();
                                                 </div>
                                             </div>
                                             <div class="product_content">
-                                                <h3><a href="product-details.php">Marshall Portable  Bluetooth</a></h3>
-                                                <span class="current_price">£60.00</span>
+                                                <h3><a href="product-details.php"><?php echo $sanpham['name']; ?></a></h3>
+                                                <span class="current_price"><?php echo $sanpham['price']; ?></span>
                                                 <span class="old_price">£86.00</span>
                                             </div>
                                         </div>
                                     </div>
+                                     <?php endforeach;?>
                                 </div>
                             </div>
                       </div>   
@@ -399,29 +411,31 @@ session_start();
             <div class="product_area"> 
                  <div class="row">
                     <div class="product_carousel product_three_column4 owl-carousel">
-                        <div class="col-lg-3">
-                            <div class="single_product">
-                                <div class="product_thumb">
-                                    <a class="primary_img" href="product-details.html"><img src="assets/img/product/product21.jpg" alt=""></a>
-                                    <a class="secondary_img" href="product-details.html"><img src="assets/img/product/product22.jpg" alt=""></a>
+    <?php foreach($dsSanPham as $sanpham): ?>
+    <div class="col-lg-3">
+        <div class="single_product">
+            <div class="product_thumb">
+                <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
+                <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
 
-                                    <div class="quick_button">
-                                        <a href="#" title="quick_view">Xem sản phẩm</a>
-                                    </div>
-
-                                    <div class="product_sale">
-                                        <span>-7%</span>
-                                    </div>
-                                </div>
-                                <div class="product_content">
-                                    <h3><a href="product-details.html">Marshall Portable  Bluetooth</a></h3>
-                                    <span class="current_price">£60.00</span>
-                                    <span class="old_price">£86.00</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="quick_button">
+                    <a href="#" title="quick_view">Xem sản phẩm</a>
                 </div>
+
+                <div class="product_sale">
+                    <span>-7%</span>
+                </div>
+            </div>
+            <div class="product_content">
+                 <h3><a href="product-details.php"><?php echo $sanpham['name']; ?></a></h3>
+                <span class="current_price"><?php echo $sanpham['price']; ?></span>
+                <span class="old_price">£86.00</span>
+            </div>
+        </div>
+    </div>
+    <?php endforeach;?>
+</div>
+
             </div>
                
         </div>
