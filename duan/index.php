@@ -51,7 +51,7 @@ session_start();
         <?php if (isset($_SESSION['user'])): ?>
             <li><a href="wishlist.html">Danh mục yêu thích</a></li>
             <?php if ($_SESSION['user']['role'] == 'admin'): ?>
-                <li><a href="admin_dashboard.php">Quản lý cửa hàng</a></li>
+                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
             <?php endif; ?>
             <li><a href="logout.php">Đăng xuất</a></li>
         <?php else: ?>
@@ -154,7 +154,7 @@ session_start();
                                 <ul>
                                     <li class="active"><a href="index.php">Trang chủ <i class="fa fa-angle-down"></i></a>
                                     </li>
-                                    <li class="mega_items"><a href="shop.html">Sản phẩm <i class="fa fa-angle-down"></i></a>
+                                    <li class="mega_items"><a href="products.php">Sản phẩm <i class="fa fa-angle-down"></i></a>
                                     </li>
                                     <li><a href="blog.php">Blog <i class="fa fa-angle-down"></i></a>
                                     </li>
