@@ -60,8 +60,13 @@ session_start();
     <ul class="dropdown_links">
         <?php if (isset($_SESSION['user'])): ?>
             <li><a href="wishlist.html">Danh mục yêu thích</a></li>
+<<<<<<< HEAD
             <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                 <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+=======
+            <?php if ($_SESSION['user']['role'] == 'admin'): ?>
+                <li><a href="admin_dashboard.php">Quản lý cửa hàng</a></li>
+>>>>>>> 932b372fe24c7c60c12dab72eee9045cfb186db4
             <?php endif; ?>
             <li><a href="logout.php">Đăng xuất</a></li>
         <?php else: ?>
@@ -164,7 +169,7 @@ session_start();
                                 <ul>
                                     <li class="active"><a href="index.php">Trang chủ <i class="fa fa-angle-down"></i></a>
                                     </li>
-                                    <li class="mega_items"><a href="products.php">Sản phẩm <i class="fa fa-angle-down"></i></a>
+                                    <li class="mega_items"><a href="shop.html">Sản phẩm <i class="fa fa-angle-down"></i></a>
                                     </li>
                                     <li><a href="blog.php">Blog <i class="fa fa-angle-down"></i></a>
                                     </li>
@@ -349,7 +354,11 @@ session_start();
                                             </div>
                                             <div class="product_content">
                                                 <h3><a href="product-details.php"><?php echo $sanpham['name']; ?></a></h3>
+<<<<<<< HEAD
                                                 <span class="current_price"><?php echo $sanpham['price']; ?> đ</span>
+=======
+                                                <span class="current_price"><?php echo $sanpham['price']; ?></span>
+>>>>>>> 932b372fe24c7c60c12dab72eee9045cfb186db4
                                                 <span class="old_price">£86.00</span>
                                             </div>
                                         </div>
@@ -415,11 +424,19 @@ session_start();
     <div class="col-lg-3">
         <div class="single_product">
             <div class="product_thumb">
+<<<<<<< HEAD
                 <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['image']; ?>" alt=""></a>
                 <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['image']; ?>" alt=""></a>
 
                 <div class="quick_button">
                     <a href="product-details.php" title="quick_view">Xem sản phẩm</a>
+=======
+                <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
+                <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
+
+                <div class="quick_button">
+                    <a href="#" title="quick_view">Xem sản phẩm</a>
+>>>>>>> 932b372fe24c7c60c12dab72eee9045cfb186db4
                 </div>
 
                 <div class="product_sale">
