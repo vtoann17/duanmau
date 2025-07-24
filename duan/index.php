@@ -2,12 +2,12 @@
 session_start();
   require_once "./db_utils.php";
   $db_utils = new DB_UTILS();
-  $dsSanPham = $db_utils->getAll('select * from sanPham');
-//   $dsSanPham = $db_utils->getAll('select * from sanpham  sp left join danhmuc dm on sp.maloai = dm.maloai');
-//  echo "<pre>";
-//   var_dump($dsSanPham);
-//   echo "<pre>";
-//   die;
+$dsSanPham = $db_utils->getAll("
+    SELECT sp.id, sp.ten, sp.gia, asp.anh
+    FROM sanpham sp
+    LEFT JOIN anhsanpham asp ON sp.id = asp.sanPhamID
+    GROUP BY sp.id
+");
 
 
 ?>
@@ -336,8 +336,8 @@ session_start();
                                     <div class="col-lg-3">
                                         <div class="single_product">
                                             <div class="product_thumb">
-                                                <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
-                                                <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
+                                                <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
+                                                <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
 
                                                 <div class="quick_button">
                                                     <a href="product-details.php" title="quick_view">Xem sản phẩm</a>
@@ -349,12 +349,8 @@ session_start();
                                                 </div>
                                             </div>
                                             <div class="product_content">
-                                                <h3><a href="product-details.php"><?php echo $sanpham['name']; ?></a></h3>
-<<<<<<< HEAD
-                                                <span class="current_price"><?php echo $sanpham['price']; ?> đ</span>
-=======
-                                                <span class="current_price"><?php echo $sanpham['price']; ?></span>
->>>>>>> 932b372fe24c7c60c12dab72eee9045cfb186db4
+                                                <h3><a href="product-details.php"><?php echo $sanpham['ten']; ?></a></h3>
+                                                <span class="current_price"><?php echo $sanpham['gia']; ?> đ</span>
                                                 <span class="old_price">£86.00</span>
                                             </div>
                                         </div>
@@ -420,19 +416,12 @@ session_start();
     <div class="col-lg-3">
         <div class="single_product">
             <div class="product_thumb">
-<<<<<<< HEAD
-                <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['image']; ?>" alt=""></a>
-                <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['image']; ?>" alt=""></a>
+
+                <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
+                <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
 
                 <div class="quick_button">
                     <a href="product-details.php" title="quick_view">Xem sản phẩm</a>
-=======
-                <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
-                <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['image_url']; ?>" alt=""></a>
-
-                <div class="quick_button">
-                    <a href="#" title="quick_view">Xem sản phẩm</a>
->>>>>>> 932b372fe24c7c60c12dab72eee9045cfb186db4
                 </div>
 
                 <div class="product_sale">
@@ -440,8 +429,8 @@ session_start();
                 </div>
             </div>
             <div class="product_content">
-                 <h3><a href="product-details.php"><?php echo $sanpham['name']; ?></a></h3>
-                <span class="current_price"><?php echo $sanpham['price']; ?></span>
+                 <h3><a href="product-details.php"><?php echo $sanpham['ten']; ?></a></h3>
+                <span class="current_price"><?php echo $sanpham['gia']; ?></span>
                 <span class="old_price">£86.00</span>
             </div>
         </div>
