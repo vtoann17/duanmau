@@ -7,17 +7,34 @@ $connect = $db->getConnection();
 
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
     if (!empty($_GET['id'])) {
-        $query = "DELETE FROM products WHERE id = :id";
-        $stmt = $connect->prepare($query);
-        $stmt->bindParam(':id', $_GET['id'], PDO::PARAM_INT);
+        $sanPhamID = $_GET['id'];
 
-        if ($stmt->execute()) {
+        try {
+            $connect->beginTransaction();
+
+            // Xóa ảnh sản phẩm
+            $stmt = $connect->prepare("DELETE FROM anhsanpham WHERE sanPhamID = :id");
+            $stmt->bindParam(':id', $sanPhamID, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Xóa biến thể (size) sản phẩm
+            $stmt = $connect->prepare("DELETE FROM bienthesanpham WHERE sanPhamID = :id");
+            $stmt->bindParam(':id', $sanPhamID, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Xóa sản phẩm chính
+            $stmt = $connect->prepare("DELETE FROM sanpham WHERE id = :id");
+            $stmt->bindParam(':id', $sanPhamID, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $connect->commit();
             $_SESSION['message'] = 'Đã xóa sản phẩm thành công!';
-        } else {
-            $_SESSION['message'] = 'Lỗi khi xóa sản phẩm!';
+        } catch (Exception $e) {
+            $connect->rollBack();
+            $_SESSION['message'] = 'Lỗi khi xóa sản phẩm: ' . $e->getMessage();
         }
 
-        header("Location: quanly.php");
+        header("Location: quanly_sanpham.php");
         exit();
     } else {
         echo "ID không hợp lệ!";

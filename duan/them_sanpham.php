@@ -3,24 +3,47 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-// Lấy danh mục để chọn
-$dsDanhMuc = $db_util->getAll("SELECT id, name FROM categories");
+// Lấy danh mục, size, màu
+$dsDanhMuc = $db_util->getAll("SELECT id, tenDanhMuc FROM danhmuc");
+$sizes = $db_util->getAll("SELECT id, size FROM kichco");
+$colors = $db_util->getAll("SELECT id, mau FROM mausac");
 
-// Xử lý khi submit
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $name = $_POST['name'];
-    $description = $_POST['description'];
-    $price = $_POST['price'];
-    $stock = $_POST['stock'];
-    $image_url = $_POST['image_url'];
-    $category_id = $_POST['category_id'];
+    $ten = $_POST['name'];
+    $moTa = $_POST['description'];
+    $danhMucID = $_POST['category_id'];
+    $gia = $_POST['price'];
+    $tonKhoData = $_POST['stock'] ?? [];
 
-    $sql = "INSERT INTO products (name, description, price, stock, image_url, category_id) 
-            VALUES (?, ?, ?, ?, ?, ?)";
-    $params = [$name, $description, $price, $stock, $image_url, $category_id];
+    // Thêm sản phẩm
+    $db_util->execute("INSERT INTO sanpham (ten, moTa, gia, danhMucID) VALUES (?, ?, ?, ?)", [$ten, $moTa, $gia, $danhMucID]);
+    $sanPhamID = $db_util->getLastInsertId();
 
-    $db_util->execute($sql, $params);
-    header("Location: quanly.php");
+    // Thêm các biến thể (color + size)
+    foreach ($tonKhoData as $colorID => $sizesData) {
+        foreach ($sizesData as $sizeID => $tonKho) {
+            if ((int)$tonKho > 0) {
+                $db_util->execute("INSERT INTO bienthesanpham (sanPhamID, kichCoID, mauSacID, tonKho) VALUES (?, ?, ?, ?)", [$sanPhamID, $sizeID, $colorID, $tonKho]);
+            }
+        }
+    }
+
+    // Upload ảnh
+    $upload_dir = 'uploads/';
+    if (!file_exists($upload_dir)) mkdir($upload_dir, 0755, true);
+
+    if (!empty($_FILES['images']['name'][0])) {
+        foreach ($_FILES['images']['tmp_name'] as $index => $tmpName) {
+            $fileName = basename($_FILES['images']['name'][$index]);
+            $targetPath = $upload_dir . time() . '_' . $fileName;
+
+            if (move_uploaded_file($tmpName, $targetPath)) {
+                $db_util->execute("INSERT INTO anhsanpham (sanPhamID, anh) VALUES (?, ?)", [$sanPhamID, $targetPath]);
+            }
+        }
+    }
+
+    header("Location: quanly_sanpham.php");
     exit;
 }
 ?>
@@ -101,7 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                              <li class="top_links"><a href="#">
     <?php
         if (isset($_SESSION['user'])) {
-            echo $_SESSION['user']['role'] == 'admin' ? 'Admin' : $_SESSION['user']['name'];
+            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
         } else {
             echo 'Tài khoản của tôi';
         }
@@ -110,7 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <ul class="dropdown_links">
         <?php if (isset($_SESSION['user'])): ?>
             <li><a href="wishlist.html">Danh mục yêu thích</a></li>
-            <?php if ($_SESSION['user']['role'] == 'admin'): ?>
+            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                 <li><a href="quanly.php">Quản lý cửa hàng</a></li>
             <?php endif; ?>
             <li><a href="logout.php">Đăng xuất</a></li>
@@ -281,32 +304,39 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <div class="form-container">
         <h2>Thêm sản phẩm</h2>
-        <form method="post">
-            <label for="name">Tên sản phẩm</label>
-            <input type="text" id="name" name="name" required>
+        <form method="post" enctype="multipart/form-data">
+    <label>Tên sản phẩm:</label>
+    <input type="text" name="name" required><br><br>
 
-            <label for="description">Mô tả</label>
-            <textarea id="description" name="description" rows="4" required></textarea>
+    <label>Mô tả:</label><br>
+    <textarea name="description" rows="4" required></textarea><br><br>
+    <label>Giá:</label>
+    <input type="number" name="price" min="1" required><br><br>
+    <label>Số lượng:</label>
+    <input type="number" name="stock" min="1" required><br><br>
 
-            <label for="price">Giá</label>
-            <input type="number" id="price" name="price" step="0.01" min="1"  required>
+    <!-- Danh mục -->
+<label>Danh mục:</label>
+<select name="category_id" required>
+    <option value="">-- Chọn danh mục --</option>
+    <?php foreach ($dsDanhMuc as $dm): ?>
+        <option value="<?= $dm['id'] ?>"><?= $dm['tenDanhMuc'] ?></option>
+    <?php endforeach; ?>
+</select><br><br>
 
-            <label for="stock">Tồn kho</label>
-            <input type="number" id="stock" name="stock" min="1" required>
+<!-- Size -->
+<label>Chọn các size:</label><br>
+<select name="sizes[]" required>
+    <option value="">-- Chọn size --</option>
+    <?php foreach ($sizes as $s): ?>
+        <option value="<?= $s['id'] ?>"><?= $s['size'] ?></option>
+    <?php endforeach; ?>
+</select><br><br>
 
-            <label for="image_url">Đường dẫn ảnh</label>
-            <input type="text" id="image_url" name="image_url" required>
-
-            <label for="category_id">Danh mục</label>
-            <select id="category_id" name="category_id" required>
-                <option value="">-- Chọn danh mục --</option>
-                <?php foreach ($dsDanhMuc as $dm): ?>
-                    <option value="<?= $dm['id'] ?>"><?= htmlspecialchars($dm['name']) ?></option>
-                <?php endforeach; ?>
-            </select>
-
-            <button type="submit">Lưu sản phẩm</button>
-        </form>
+   <label>Tải ảnh lên:</label>
+   <input type="file" name="images[]" multiple accept="image/*"><br>
+    <br><button type="submit">Lưu sản phẩm</button>
+</form>
         <a href="quanly.php" class="back-link">← Quay lại quản lý</a>
     </div>
       </div>

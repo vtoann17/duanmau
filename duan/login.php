@@ -4,66 +4,60 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-$error = "";
-$success = "";
+$login_error = "";
+$register_error = "";
+$register_success = "";
 
-if ($_SERVER['REQUEST_METHOD'] === "POST") {
-    // Nhận dữ liệu từ form
-    $name = trim($_POST['name']);
+if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['register'])) {
+    $ten = trim($_POST['ten']);
     $email = trim($_POST['email']);
-    $password = $_POST['matkhau'];
-    $phone = trim($_POST['phone']);
-    $address = trim($_POST['address']);
-    $created = date('Y-m-d H:i:s'); // thời gian hiện tại
+    $matkhau = $_POST['matkhau'] ?? '';
+    $sdt = trim($_POST['sdt']);
+    $diachi = trim($_POST['diachi']);
+    $ngaytao = date('Y-m-d H:i:s');
 
-    // Kiểm tra dữ liệu
-    if (empty($name) || empty($email) || empty($password) || empty($phone) || empty($address)) {
-        $error = "Vui lòng điền đầy đủ thông tin.";
+    if (empty($ten) || empty($email) || empty($matkhau) || empty($sdt) || empty($diachi)) {
+        $register_error = "Vui lòng điền đầy đủ thông tin.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "Email không hợp lệ.";
-    } elseif (strlen($password) < 6) {
-        $error = "Mật khẩu ít nhất phải 6 ký tự.";
+        $register_error = "Email không hợp lệ.";
+    } elseif (strlen($matkhau) < 6) {
+        $register_error = "Mật khẩu ít nhất 6 ký tự.";
     } else {
-        // Kiểm tra email đã tồn tại chưa
-        $exists = $db_util->getOne("SELECT * FROM users WHERE email = ?", [$email]);
-        if ($exists) {
-            $error = "Email đã tồn tại.";
+        $tontai = $db_util->getOne("SELECT * FROM nguoidung WHERE email = ?", [$email]);
+        if ($tontai) {
+            $register_error = "Email đã được đăng ký.";
         } else {
-            // Mã hóa mật khẩu
-            $hashed = password_hash($password, PASSWORD_DEFAULT);
-            $role = 'customer';
+            $hashed = password_hash($matkhau, PASSWORD_DEFAULT);
+            $vaitro = 'admin';
 
-            // Thực hiện thêm vào CSDL
             $db_util->execute(
-                "INSERT INTO users (name, email, password, role, phone, address, created_at)
+                "INSERT INTO nguoidung (ten, email, matkhau, vaitro, soDienThoai, diachi, ngaytao)
                  VALUES (?, ?, ?, ?, ?, ?, ?)",
-                [$name, $email, $hashed, $role, $phone, $address, $created]
+                [$ten, $email, $hashed, $vaitro, $sdt, $diachi, $ngaytao]
             );
-
-            $success = "Đăng ký thành công. Vui lòng đăng nhập!";
+            $register_success = "Đăng ký thành công. Vui lòng đăng nhập!";
         }
     }
 }
-//Đăng nhập
-if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['login'])) {
-    $email = trim($_POST['email']);
-    $password = $_POST['matkhau'];
 
-    if (empty($email) || empty($password)) {
-        $error = "Vui lòng nhập đầy đủ email và mật khẩu.";
+if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['login'])) {
+    $email = trim($_POST['email']) ?? '';
+    $matkhau = $_POST["matkhau"] ?? '';
+
+    if (empty($email) || empty($matkhau)) {
+        $login_error = "Vui lòng nhập đầy đủ email và mật khẩu.";
     } else {
-        $user = $db_util->getOne("SELECT * FROM users WHERE email = ?", [$email]);
-        if ($user && password_verify($password, $user['password'])) {
-            // Đăng nhập thành công
+        $user = $db_util->getOne("SELECT * FROM nguoidung WHERE email = ?", [$email]);
+        if ($user && password_verify($matkhau, $user['matKhau'])) {
             $_SESSION['user'] = $user;
-            $success = "Đăng nhập thành công!";
-            header("Location: index.php"); // hoặc trang dashboard
+            header("Location: index.php");
             exit;
         } else {
-            $error = "Email hoặc mật khẩu không đúng.";
+            $login_error = "Email hoặc mật khẩu không đúng.";
         }
     }
 }
+
 ?>
 
 <!doctype html>
@@ -300,17 +294,18 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['login'])) {
                     <div class="account_form">
                         <h2>Đăng nhập</h2>
                         <form action="" method="post">
-    <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
-    <?php if (!empty($success)) echo "<p style='color:green;'>$success</p>"; ?>
+    <?php if (!empty($login_error)) echo "<p style='color:red;'>$login_error</p>"; ?>
 
-    <p>   
-        <label>Email <span>*</span></label>
-        <input type="email" name="email" required>
-    </p>
-    <p>   
-        <label>Mật khẩu <span>*</span></label>
-        <input type="password" name="matkhau" required>
-    </p>   
+<p>
+    <label>Email</label>
+    <input type="email" name="email" required />
+</p>
+
+<p>
+    <label>Mật khẩu</label>
+    <input type="password" name="matkhau" required />
+</p>
+
     <div class="login_submit">
         <a href="#">Quên mật khẩu?</a>
         <label for="remember">
@@ -330,37 +325,33 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['login'])) {
                     <div class="account_form register">
                         <h2>Đăng kí</h2>
                         <form action="" method="post">
-    <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
-    <?php if (!empty($success)) echo "<p style='color:green;'>$success</p>"; ?>
+    <?php if (!empty($register_error)) echo "<p style='color:red;'>$register_error</p>"; ?>
+    <?php if (!empty($register_success)) echo "<p style='color:green;'>$register_success</p>"; ?>
 
-    <p>   
-        <label>Họ và tên <span>*</span></label>
-        <input type="text" name="name" required />
-    </p>
+   <p>
+       <label>Họ và tên</label>
+       <input type="text" name="ten" required />
+   </p>
 
-    <p>   
-        <label>Địa chỉ email <span>*</span></label>
-        <input type="email" name="email" required />
-    </p>
+   <p>
+       <label>Email</label>
+       <input type="email" name="email" required />
+   </p>
 
-    <p>   
-        <label>Mật khẩu <span>*</span></label>
-        <input type="password" name="matkhau" required />
-    </p>
+   <p>
+       <label>Mật khẩu</label>
+       <input type="password" name="matkhau" required />
+       </p>
+<p>
+    <label>Số điện thoại</label>
+    <input type="text" name="sdt" required />
+</p>
+<p>
+    <label>Địa chỉ</label>
+    <input type="text" name="diachi" required />
+</p>
 
-    <p>   
-        <label>Số điện thoại <span>*</span></label>
-        <input type="text" name="phone" required />
-    </p>
-
-    <p>   
-        <label>Địa chỉ <span>*</span></label>
-        <input type="text" name="address" required />
-    </p>
-
-    <div class="login_submit">
-        <button type="submit">Đăng kí</button>
-    </div>
+    <button type="submit" name="register">Đăng ký</button>
 </form>
 
                     </div>    

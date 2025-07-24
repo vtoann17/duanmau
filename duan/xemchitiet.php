@@ -2,42 +2,30 @@
 session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
+if (!isset($_GET['id'])) {
+    echo "ID không hợp lệ";
+    exit;
+}
+$id = $_GET['id'];
 
-// Lấy dữ liệu
+// Lấy sản phẩm + tên danh mục
 $sanphams = $db_util->getAll("
-    SELECT sp.*, dm.tenDanhMuc AS tenDM 
-    FROM sanpham sp 
-    LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id 
+    SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
+    FROM sanpham sp
+    LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
+    ORDER BY sp.ngayTao DESC
 ");
 
-$donhangs = $db_util->getAll("
-    SELECT * FROM donhang 
-    ORDER BY ngayDat DESC
-");
-
-$nguoidungs = $db_util->getAll("
-    SELECT * FROM nguoidung 
-    ORDER BY ngayTao DESC
-");
-
-$danhmucs = $db_util->getAll("
-    SELECT * FROM danhmuc 
-    ORDER BY id DESC
-");
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Fashion eCommerce HTML Template</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Quản lý sản phẩm</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <link rel="stylesheet" href="css/style.css">
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
     
     <!-- CSS 
     ========================= -->
@@ -48,10 +36,9 @@ $danhmucs = $db_util->getAll("
     
     <!-- Main Style CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
-    
 </head>
 <body>
-    <header class="header_area header_three">
+  <header class="header_area header_three">
         <!--header top start-->
         <div class="header_top">
             <div class="container-fluid">   
@@ -242,7 +229,7 @@ $danhmucs = $db_util->getAll("
         </div>
         <!--header bottom end-->
     </header>
-<div class="d-flex">
+  <div class="d-flex">
     <!-- Sidebar -->
     <div style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
       <h2 class="text-center">Admin</h2>
@@ -261,50 +248,134 @@ $danhmucs = $db_util->getAll("
 
     <!-- Main content -->
     <div class="p-4 flex-grow-1">
-      <h1>Dashboard</h1>
-      <div class="row mt-4">
-        <div class="col-md-3">
-          <div class="card text-bg-primary mb-3">
-            <div class="card-body">
-              <h5 class="card-title">Doanh thu</h5>
-              <p class="card-text">50,000,000 VNĐ</p>
+      <h1 class="nav-link text-black">Quản lý sản phẩm</h1>
+  <?php if (isset($_SESSION['message'])): ?>
+    <div style="background: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border: 1px solid #c3e6cb; border-radius: 5px;">
+        <?= $_SESSION['message'] ?>
+    </div>
+    <?php unset($_SESSION['message']); ?>
+<?php endif; ?>
+<div class="product_details">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 col-md-5">
+                   <div class="product-details-tab">
+
+                        <div id="img-1" class="zoomWrapper single-zoom">
+                            <?php foreach($sanphams as $sp): ?>
+                                <?php
+                                 $variants = $db_util->getAll("
+            SELECT bt.*, kc.size 
+            FROM bienthesanpham bt
+            LEFT JOIN kichco kc ON bt.kichCoID = kc.id
+            WHERE bt.sanPhamID = ?", [$sp['id']]);
+$images = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$sp['id']]);
+                                ?>
+                            <?php foreach ($images as $img): ?>
+                  <img src="<?= $img['anh'] ?>" width="500"/>
+                <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7 col-md-7">
+                    <div class="product_d_right">
+                       <form action="#">
+                        
+                            <h1><?= $sp['ten'] ?></h1>
+                            <div class=" product_ratting">
+                                <ul>
+                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
+                                    <li class="review"><a href="#"> 1 review </a></li>
+                                    <li class="review"><a href="#"> Write a review </a></li>
+                                </ul>
+                            </div>
+                            <div class="product_price">
+                                <span class="current_price"><?= $sp['gia'] ?></span>
+                            </div>
+                            <div class="product_desc">
+                                <p> <?= $sp['moTa'] ?> </p>
+                            </div>
+
+                            <div class=" product_d_action">
+                               <ul>
+                                   <li><a href="#" title="Add to wishlist"><i class="fa fa-heart-o" aria-hidden="true"></i> Thêm vào danh sách yêu thích</a></li>
+                               </ul>
+                            </div>
+                            <?php endforeach; ?>
+                        </form>
+
+                    </div>
+                </div>
             </div>
-          </div>
+        </div>    
+    </div>
+      <!-- Tìm kiếm & Sắp xếp -->
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" placeholder="Tìm theo tên sản phẩm...">
         </div>
         <div class="col-md-3">
-          <div class="card text-bg-success mb-3">
-            <div class="card-body">
-              <h5 class="card-title">Đơn hàng</h5>
-              <p class="card-text">120</p>
-            </div>
-          </div>
+          <select class="form-select">
+            <option value="">Sắp xếp theo giá</option>
+            <option value="asc">Giá tăng dần</option>
+            <option value="desc">Giá giảm dần</option>
+          </select>
         </div>
-        <div class="col-md-3">
-          <div class="card text-bg-warning mb-3">
-            <div class="card-body">
-              <h5 class="card-title">Sản phẩm</h5>
-              <p class="card-text">340</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card text-bg-info mb-3">
-            <div class="card-body">
-              <h5 class="card-title">Khách hàng</h5>
-              <p class="card-text">75</p>
-            </div>
-          </div>
+        <div class="col-md-5 text-end">
+          <a class="btn btn-primary" href="them_sanpham.php">Thêm sản phẩm</a>
         </div>
       </div>
+
+      <!-- Bảng -->
+      <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>ID</th><th>Ảnh</th><th>Tên</th><th>Size</th><th>Màu</th><th>Tồn kho</th><th>Loại</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($sanphams as $sp): ?>
+        <?php
+        $variants = $db_util->getAll("SELECT bt.*, kc.size, ms.mau FROM bienthesanpham bt LEFT JOIN kichco kc ON bt.kichCoID = kc.id LEFT JOIN mausac ms ON bt.mauSacID = ms.id WHERE bt.sanPhamID = ?", [$sp['id']]);
+        $images = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$sp['id']]);
+        ?>
+        <?php foreach ($variants as $v): ?>
+        <tr>
+          <td><?= $sp['id'] ?></td>
+          <td>
+            <?php if (!empty($images)): ?>
+              <img src="<?= $images[0]['anh'] ?>" width="60">
+            <?php else: ?>
+              <span>Không có ảnh</span>
+            <?php endif; ?>
+          </td>
+          <td><?= $sp['ten'] ?></td>
+          <td><?= $v['size'] ?? 'Chưa có' ?></td>
+          <td><?= $v['mau'] ?? 'Không rõ' ?></td>
+          <td><?= $v['tonKho'] ?></td>
+          <td><?= $sp['category_name'] ?></td>
+        </tr>
+        <?php endforeach; ?>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+
+      <!-- Phân trang -->
+      <nav>
+        <ul class="pagination">
+          <li class="page-item"><a class="page-link" href="#">Trước</a></li>
+          <li class="page-item"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li class="page-item"><a class="page-link" href="#">Tiếp</a></li>
+        </ul>
+      </nav>
+
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Plugins JS -->
-<script src="assets/js/plugins.js"></script>
-
-<!-- Main JS -->
-<script src="assets/js/main.js"></script>
 </body>
 </html>

@@ -659,11 +659,11 @@
                             <div class="col-lg-4 col-md-4 col-12 ">
                                 <div class="single_product">
                                     <div class="product_thumb">
-                                        <a class="primary_img" href="product-details.html"><img src="assets/img/product/product15.jpg" alt=""></a>
-                                        <a class="secondary_img" href="product-details.html"><img src="assets/img/product/product16.jpg" alt=""></a>
+                                        <a class="primary_img" href="product-details.php"><img src="assets/img/product/product15.jpg" alt=""></a>
+                                        <a class="secondary_img" href="product-details.php"><img src="assets/img/product/product16.jpg" alt=""></a>
 
                                         <div class="quick_button">
-                                            <a href="product-details.html"title="quick_view">Xem sản phẩm</a>
+                                            <a href="product-details.php"title="quick_view">Xem sản phẩm</a>
                                         </div>
 
                                         <div class="double_base">

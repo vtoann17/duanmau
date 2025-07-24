@@ -3,41 +3,62 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-// Danh sách danh mục để chọn
-$danhmucs = $db_util->getAll("SELECT * FROM categories");
+// Lấy danh sách danh mục
+$danhmucs = $db_util->getAll("SELECT * FROM danhmuc");
 
 $sanpham = null;
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
-    $sanpham = $db_util->getOne("SELECT * FROM products WHERE id = ?", [$id]);
+    $sanpham = $db_util->getOne("SELECT * FROM sanpham WHERE id = ?", [$id]);
+    $anhs = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]);
 }
 
-// Khi submit form
+// Khi submit
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id = $_POST['id'] ?? null;
-    $name = $_POST['name'];
-    $description = $_POST['description'];
-    $price = $_POST['price'];
-    $stock = $_POST['stock'];
-    $image_url = $_POST['image_url'];
-    $category_id = $_POST['category_id'];
+    $ten = $_POST['name'];
+    $moTa = $_POST['description'];
+    $gia = $_POST['price'];
+    $danhMucID = $_POST['category_id'];
 
-
-    // Thêm mới hoặc cập nhật
     if ($id) {
-        // Cập nhật
-        $sql = "UPDATE products SET name=?, description=?, price=?, stock=?, image_url=?, category_id=? WHERE id=?";
-        $db_util->execute($sql, [$name, $description, $price, $stock, $image_url, $category_id, $id]);
+        // Cập nhật sản phẩm
+        $sql = "UPDATE sanpham SET ten=?, moTa=?, gia=?, danhMucID=? WHERE id=?";
+        $db_util->execute($sql, [$ten, $moTa, $gia, $danhMucID, $id]);
     } else {
         // Thêm mới
-        $sql = "INSERT INTO products (name, description, price, stock, image_url, category_id) VALUES (?, ?, ?, ?, ?, ?)";
-        $db_util->execute($sql, [$name, $description, $price, $stock, $image_url, $category_id]);
+        $sql = "INSERT INTO sanpham (ten, moTa, gia, danhMucID) VALUES (?, ?, ?, ?)";
+        $db_util->execute($sql, [$ten, $moTa, $gia, $danhMucID]);
+        $id = $db_util->getLastInsertId();
     }
 
-    header("Location: quanly.php");
+    // Cập nhật ảnh nếu có
+    $upload_dir = 'uploads/';
+    if (!file_exists($upload_dir)) mkdir($upload_dir, 0755, true);
+
+    if (!empty($_FILES['images']['name'][0])) {
+        // Xóa ảnh cũ
+        $db_util->execute("DELETE FROM anhsanpham WHERE sanPhamID = ?", [$id]);
+
+        foreach ($_FILES['images']['tmp_name'] as $index => $tmpName) {
+            $fileName = basename($_FILES['images']['name'][$index]);
+            $targetPath = $upload_dir . time() . '_' . $fileName;
+
+            if (move_uploaded_file($tmpName, $targetPath)) {
+                $db_util->execute(
+                    "INSERT INTO anhsanpham (sanPhamID, anh) VALUES (?, ?)",
+                    [$id, $targetPath]
+                );
+            }
+        }
+    }
+
+    $_SESSION['message'] = "Đã lưu sản phẩm thành công!";
+    header("Location: quanly_sanpham.php");
     exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -115,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                              <li class="top_links"><a href="#">
     <?php
         if (isset($_SESSION['user'])) {
-            echo $_SESSION['user']['role'] == 'admin' ? 'Admin' : $_SESSION['user']['name'];
+            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
         } else {
             echo 'Tài khoản của tôi';
         }
@@ -124,7 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <ul class="dropdown_links">
         <?php if (isset($_SESSION['user'])): ?>
             <li><a href="wishlist.html">Danh mục yêu thích</a></li>
-            <?php if ($_SESSION['user']['role'] == 'admin'): ?>
+            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                 <li><a href="quanly.php">Quản lý cửa hàng</a></li>
             <?php endif; ?>
             <li><a href="logout.php">Đăng xuất</a></li>
@@ -297,36 +318,40 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <h2>Sửa sản phẩm</h2>
          <form method="POST" enctype="multipart/form-data">
         <?php if ($sanpham): ?>
-            <input type="hidden" name="id" value="<?= $sanpham['id'] ?>" readonly>
-            <input type="hidden" name="old_image" value="<?= $sanpham['image_url'] ?>">
+            <input type="hidden" name="id" value="<?= $sanpham['id'] ?>">
         <?php endif; ?>
 
-        <label>Tên:</label><br>
-        <input type="text" name="name" value="<?= $sanpham['name'] ?? '' ?>" required><br><br>
+        <label>Tên sản phẩm:</label>
+        <input type="text" name="name" value="<?= $sanpham['ten'] ?? '' ?>" required>
 
-        <label>Miêu tả:</label><br>
-        <textarea name="description" required><?= $sanpham['description'] ?? '' ?></textarea><br><br>
+        <label>Mô tả:</label>
+        <textarea name="description" required><?= $sanpham['moTa'] ?? '' ?></textarea>
 
-        <label>Giá:</label><br>
-        <input type="number" name="price" value="<?= $sanpham['price'] ?? '' ?>" required><br><br>
+        <label>Giá:</label>
+        <input type="number" name="price" value="<?= $sanpham['gia'] ?? '' ?>" required>
 
-        <label>Tồn kho:</label><br>
-        <input type="number" name="stock" value="<?= $sanpham['stock'] ?? '' ?>" required><br><br>
-
-        <label>Danh mục:</label><br>
+        <label>Danh mục:</label>
         <select name="category_id" required>
             <?php foreach ($danhmucs as $dm): ?>
-                <option value="<?= $dm['id'] ?>" <?= isset($sanpham) && $sanpham['category_id'] == $dm['id'] ? 'selected' : '' ?>>
-                    <?= $dm['name'] ?>
+                <option value="<?= $dm['id'] ?>" <?= (isset($sanpham) && $sanpham['danhMucID'] == $dm['id']) ? 'selected' : '' ?>>
+                    <?= $dm['tenDanhMuc'] ?>
                 </option>
             <?php endforeach; ?>
-        </select><br><br>
+        </select>
 
-         <label for="image_url">Đường dẫn ảnh</label>
-            <input type="text" id="image_url" name="image_url" required>
+        <label>Ảnh sản phẩm:</label>
+        <input type="file" name="images[]" multiple accept="image/*">
 
-        <button type="submit"><?= $sanpham ? "Cập nhật" : "Thêm mới" ?></button>
-        <a href="quanly.php">Quay lại</a>
+        <?php if (!empty($anhs)): ?>
+            <div>
+                <?php foreach ($anhs as $a): ?>
+                    <img src="<?= $a['anh'] ?>" width="80" style="margin-top: 10px;">
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <button type="submit"><?= $sanpham ? 'Cập nhật' : 'Thêm mới' ?></button>
+        <a href="quanly_sanpham.php" class="back-link">← Quay lại quản lý</a>
     </form>
         <a href="quanly.php" class="back-link">← Quay lại quản lý</a>
     </div>
