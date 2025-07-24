@@ -60,13 +60,9 @@ session_start();
     <ul class="dropdown_links">
         <?php if (isset($_SESSION['user'])): ?>
             <li><a href="wishlist.html">Danh mục yêu thích</a></li>
-<<<<<<< HEAD
             <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                 <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-=======
-            <?php if ($_SESSION['user']['role'] == 'admin'): ?>
-                <li><a href="admin_dashboard.php">Quản lý cửa hàng</a></li>
->>>>>>> 932b372fe24c7c60c12dab72eee9045cfb186db4
+    
             <?php endif; ?>
             <li><a href="logout.php">Đăng xuất</a></li>
         <?php else: ?>
