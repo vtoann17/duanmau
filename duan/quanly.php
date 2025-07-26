@@ -249,7 +249,7 @@ $danhmucs = $db_util->getAll("
       <ul class="nav flex-column mt-4">
         <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i> Dashboard</a></li>
         <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i class="fa fa-shirt"></i> Sản phẩm</a></li>
-        <li class="nav-item"><a href="categories.html" class="nav-link text-black"><i class="fa fa-tags"></i> Danh mục</a></li>
+        <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i> Danh mục</a></li>
         <li class="nav-item"><a href="orders.html" class="nav-link text-black"><i class="fa fa-box"></i> Đơn hàng</a></li>
         <li class="nav-item"><a href="customers.html" class="nav-link text-black"><i class="fa fa-users"></i> Khách hàng</a></li>
         <li class="nav-item"><a href="coupons.html" class="nav-link text-black"><i class="fa fa-gift"></i> Mã giảm giá</a></li>

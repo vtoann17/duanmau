@@ -165,7 +165,7 @@ $dsSanPham = $db_utils->getAll("
                                 <ul>
                                     <li class="active"><a href="index.php">Trang chủ <i class="fa fa-angle-down"></i></a>
                                     </li>
-                                    <li class="mega_items"><a href="shop.html">Sản phẩm <i class="fa fa-angle-down"></i></a>
+                                    <li class="mega_items"><a href="products.php">Sản phẩm <i class="fa fa-angle-down"></i></a>
                                     </li>
                                     <li><a href="blog.php">Blog <i class="fa fa-angle-down"></i></a>
                                     </li>
@@ -208,7 +208,7 @@ $dsSanPham = $db_utils->getAll("
                                 <nav>  
                                     <ul>
                                         <li class="active"><a href="index.php">Trang chủ </a></li>
-                                        <li><a href="shop_category.php">Sản phẩm </a></li>
+                                        <li><a href="products.php">Sản phẩm </a></li>
                                         <li><a href="about.php">Giới thiệu</a></li>
                                         <li><a href="#">Trang <i class="fa fa-angle-down"></i></a>
                                             <ul class="sub_menu pages">
@@ -340,7 +340,7 @@ $dsSanPham = $db_utils->getAll("
                                                 <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
 
                                                 <div class="quick_button">
-                                                    <a href="product-details.php" title="quick_view">Xem sản phẩm</a>
+                                                    <a href="product-details.php?id=<?= $sanpham['id'] ?>" title="Xem nhanh">Xem sản phẩm</a>
                                                     
                                                 </div>
 
@@ -350,8 +350,7 @@ $dsSanPham = $db_utils->getAll("
                                             </div>
                                             <div class="product_content">
                                                 <h3><a href="product-details.php"><?php echo $sanpham['ten']; ?></a></h3>
-                                                <span class="current_price"><?php echo $sanpham['gia']; ?> đ</span>
-                                                <span class="old_price">£86.00</span>
+                                                <span class="current_price"><?php echo number_format ($sanpham['gia']); ?> đ</span>
                                             </div>
                                         </div>
                                     </div>
@@ -421,7 +420,7 @@ $dsSanPham = $db_utils->getAll("
                 <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
 
                 <div class="quick_button">
-                    <a href="product-details.php" title="quick_view">Xem sản phẩm</a>
+                    <a href="product-details.php?id=<?= $sanpham['id'] ?>" title="Xem nhanh">Xem sản phẩm</a>
                 </div>
 
                 <div class="product_sale">
@@ -430,8 +429,8 @@ $dsSanPham = $db_utils->getAll("
             </div>
             <div class="product_content">
                  <h3><a href="product-details.php"><?php echo $sanpham['ten']; ?></a></h3>
-                <span class="current_price"><?php echo $sanpham['gia']; ?></span>
-                <span class="old_price">£86.00</span>
+                <span class="current_price"><?php echo number_format ($sanpham['gia']); ?></span>
+
             </div>
         </div>
     </div>

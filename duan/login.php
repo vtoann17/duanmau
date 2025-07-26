@@ -307,7 +307,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['login'])) {
 </p>
 
     <div class="login_submit">
-        <a href="#">Quên mật khẩu?</a>
+        <a href="quenmk.php">Quên mật khẩu?</a>
         <label for="remember">
             <input id="remember" type="checkbox">
             Nhớ mật khẩu

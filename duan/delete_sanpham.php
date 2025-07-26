@@ -17,11 +17,6 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
             $stmt->bindParam(':id', $sanPhamID, PDO::PARAM_INT);
             $stmt->execute();
 
-            // Xóa biến thể (size) sản phẩm
-            $stmt = $connect->prepare("DELETE FROM bienthesanpham WHERE sanPhamID = :id");
-            $stmt->bindParam(':id', $sanPhamID, PDO::PARAM_INT);
-            $stmt->execute();
-
             // Xóa sản phẩm chính
             $stmt = $connect->prepare("DELETE FROM sanpham WHERE id = :id");
             $stmt->bindParam(':id', $sanPhamID, PDO::PARAM_INT);

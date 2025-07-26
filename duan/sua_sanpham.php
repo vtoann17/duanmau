@@ -36,12 +36,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $upload_dir = 'uploads/';
     if (!file_exists($upload_dir)) mkdir($upload_dir, 0755, true);
 
-    if (!empty($_FILES['images']['name'][0])) {
-        // Xóa ảnh cũ
-        $db_util->execute("DELETE FROM anhsanpham WHERE sanPhamID = ?", [$id]);
+    // Xóa ảnh cũ
+    $db_util->execute("DELETE FROM anhsanpham WHERE sanPhamID = ?", [$id]);
 
-        foreach ($_FILES['images']['tmp_name'] as $index => $tmpName) {
-            $fileName = basename($_FILES['images']['name'][$index]);
+    // Ảnh chính (image[])
+    if (!empty($_FILES['image']['name'][0])) {
+        foreach ($_FILES['image']['tmp_name'] as $index => $tmpName) {
+            $fileName = basename($_FILES['image']['name'][$index]);
+            $targetPath = $upload_dir . time() . '_' . $fileName;
+
+            if (move_uploaded_file($tmpName, $targetPath)) {
+                $isMain = ($index === 0) ? 1 : 0; // Ảnh đầu tiên làm ảnh chính
+                $db_util->execute(
+                    "INSERT INTO anhsanpham (sanPhamID, anh, anhChinh) VALUES (?, ?, ?)",
+                    [$id, $targetPath, $isMain]
+                );
+            }
+        }
+    }
+
+    // Ảnh phụ (anh[])
+    if (!empty($_FILES['anh']['name'][0])) {
+        foreach ($_FILES['anh']['tmp_name'] as $index => $tmpName) {
+            $fileName = basename($_FILES['anh']['name'][$index]);
             $targetPath = $upload_dir . time() . '_' . $fileName;
 
             if (move_uploaded_file($tmpName, $targetPath)) {
@@ -58,6 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     exit;
 }
 ?>
+
 
 
 <!DOCTYPE html>
@@ -339,21 +357,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <?php endforeach; ?>
         </select>
 
-        <label>Ảnh sản phẩm:</label>
-        <input type="file" name="images[]" multiple accept="image/*">
-
-        <?php if (!empty($anhs)): ?>
-            <div>
-                <?php foreach ($anhs as $a): ?>
-                    <img src="<?= $a['anh'] ?>" width="80" style="margin-top: 10px;">
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+        <label>Tải ảnh lên:</label>
+            <input type="file" name="image[]" multiple accept="image/*"><br>
+            <label>Ảnh phụ:</label>
+            <input type="file" name="anh[]" multiple accept="image/*"><br>
 
         <button type="submit"><?= $sanpham ? 'Cập nhật' : 'Thêm mới' ?></button>
         <a href="quanly_sanpham.php" class="back-link">← Quay lại quản lý</a>
     </form>
-        <a href="quanly.php" class="back-link">← Quay lại quản lý</a>
     </div>
       </div>
     <!-- Plugins JS -->

@@ -12,9 +12,12 @@ $id = $_GET['id'];
 $sanphams = $db_util->getAll("
     SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
     FROM sanpham sp
-    LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
+     LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
+    WHERE sp.id = ?
     ORDER BY sp.ngayTao DESC
-");
+",[$id]);
+
+$images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]);
 
 ?>
 <!DOCTYPE html>
@@ -262,18 +265,9 @@ $sanphams = $db_util->getAll("
                    <div class="product-details-tab">
 
                         <div id="img-1" class="zoomWrapper single-zoom">
+                            
                             <?php foreach($sanphams as $sp): ?>
-                                <?php
-                                 $variants = $db_util->getAll("
-            SELECT bt.*, kc.size 
-            FROM bienthesanpham bt
-            LEFT JOIN kichco kc ON bt.kichCoID = kc.id
-            WHERE bt.sanPhamID = ?", [$sp['id']]);
-$images = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$sp['id']]);
-                                ?>
-                            <?php foreach ($images as $img): ?>
-                  <img src="<?= $img['anh'] ?>" width="500"/>
-                <?php endforeach; ?>
+                             <img src="<?= $images['anh'] ?>" width="500"/>
                         </div>
                     </div>
                 </div>
@@ -334,33 +328,20 @@ $images = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$sp[
       <table class="table table-bordered">
     <thead>
       <tr>
-        <th>ID</th><th>Ảnh</th><th>Tên</th><th>Size</th><th>Màu</th><th>Tồn kho</th><th>Loại</th>
+        <th>Size</th><th>Số lượng</th><th>Mô tả</th>
       </tr>
     </thead>
     <tbody>
-      <?php foreach ($sanphams as $sp): ?>
         <?php
-        $variants = $db_util->getAll("SELECT bt.*, kc.size, ms.mau FROM bienthesanpham bt LEFT JOIN kichco kc ON bt.kichCoID = kc.id LEFT JOIN mausac ms ON bt.mauSacID = ms.id WHERE bt.sanPhamID = ?", [$sp['id']]);
-        $images = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$sp['id']]);
+        $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = ? ", [$sp['id']]);
         ?>
-        <?php foreach ($variants as $v): ?>
+        <?php foreach ($kichco as $kc): ?>
         <tr>
-          <td><?= $sp['id'] ?></td>
-          <td>
-            <?php if (!empty($images)): ?>
-              <img src="<?= $images[0]['anh'] ?>" width="60">
-            <?php else: ?>
-              <span>Không có ảnh</span>
-            <?php endif; ?>
-          </td>
-          <td><?= $sp['ten'] ?></td>
-          <td><?= $v['size'] ?? 'Chưa có' ?></td>
-          <td><?= $v['mau'] ?? 'Không rõ' ?></td>
-          <td><?= $v['tonKho'] ?></td>
-          <td><?= $sp['category_name'] ?></td>
+          <td><?= $kc['size'] ?? 'Chưa có' ?></td>
+          <td><?= $kc['soLuong'] ?></td>
+          <td><?= $kc['moTa'] ?></td>
         </tr>
         <?php endforeach; ?>
-      <?php endforeach; ?>
     </tbody>
   </table>
 
