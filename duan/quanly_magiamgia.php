@@ -3,58 +3,26 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-// Lấy dữ liệu sản phẩm và danh mục
-
 $limit =  $_GET["limit"] ?? 5;
 $page = $_GET["page"] ??  1;
 $offset = ($page -1) * $limit;
 
-$tongdong = $db_util->getValue("SELECT COUNT(*) FROM sanpham");
+$tongdong = $db_util->getValue("SELECT COUNT(*) FROM magiamgia");
 $sotrang = ceil($tongdong/$limit);
 
-$sanphams = $db_util->getAll("
-    SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
-    FROM sanpham sp
-    LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
-    ORDER BY sp.ngayTao DESC
-    LIMIT $limit OFFSET $offset
-");
-
-if(isset($_GET["sort"])){
-    $sort = $_GET["sort"];
-    if($sort=="asc"){
-        $sanphams = $db_util->getAll("
-        SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
-        FROM sanpham sp
-        LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
-        ORDER BY sp.gia ASC
-        LIMIT $limit OFFSET $offset
-    ");
-    }else{
-          $sanphams = $db_util->getAll("
-        SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
-        FROM sanpham sp
-        LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
-        ORDER BY sp.gia DESC
-        LIMIT $limit OFFSET $offset
-    ");
-    }
+if (isset($_GET['delete'])) {
+    $id = $_GET['delete'];
+    $db_util->execute("DELETE FROM magiamgia WHERE id = ?", [$id]);
+    header("Location: quanly_magiamgia.php");
+    exit;
 }
 
-//tìm kiếm
-$search = $_GET['search'] ?? '';
-$timkiem = "
-    SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
-    FROM sanpham sp
-    LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
-    WHERE sp.ten LIKE ?
-";
-
+// Lấy danh sách mã giảm giá
+$dsMa = $db_util->getAll("SELECT * FROM magiamgia ORDER BY id DESC");
 ?>
 
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8" />
     <title>Quản lý sản phẩm</title>
@@ -73,9 +41,8 @@ $timkiem = "
     <!-- Main Style CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-
 <body>
-    <header class="header_area header_three">
+     <header class="header_area header_three">
         <!--header top start-->
         <div class="header_top">
             <div class="container-fluid">
@@ -98,6 +65,7 @@ $timkiem = "
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
                                         <li><a href="wishlist.html">Danh mục yêu thích</a></li>
+                                         <li><a href="wishlist.html">Thông tin tài khoản</a></li>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                                         <li><a href="quanly.php">Quản lý cửa hàng</a></li>
                                         <?php endif; ?>
@@ -285,41 +253,34 @@ $timkiem = "
       </ul>
     </div>
 
-        <!-- Main content -->
-        <div class="p-4 flex-grow-1">
-            <h1 class="nav-link text-black">Quản lý sản phẩm</h1>
+        <!-- Nội dung chính -->
+        <div class="flex-grow-1 p-4">
+            <h2>Quản lý mã giảm giá</h2>
+
+            <!-- Thông báo -->
             <?php if (isset($_SESSION['message'])): ?>
-            <div
-                style="background: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border: 1px solid #c3e6cb; border-radius: 5px;">
-                <?= $_SESSION['message'] ?>
-            </div>
-            <?php unset($_SESSION['message']); ?>
-            <?php endif; ?>
-            <!-- Tìm kiếm & Sắp xếp -->
-            <div class="row mb-3 align-items-center">
+            <div class="alert alert-success"><?= $_SESSION['message'] ?></div>
+            <?php unset($_SESSION['message']); endif; ?>
+
+            <!-- Thanh tìm kiếm + sắp xếp -->
+            <form class="row mb-3 g-2" method="get">
                 <div class="col-md-4">
-                    <form action="" method="get" class="d-flex">
-                        
-                        <input type="text" class="form-control me-2" name="search"
-                            placeholder="Tìm theo tên sản phẩm hoặc danh mục..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search" placeholder="Tìm theo phần trăm giảm...">
+                        <button class="btn btn-outline-secondary"><i class="fas fa-search"></i></button>
+                    </div>
                 </div>
                 <div class="col-md-3">
-                    <select name="sort" onchange="this.form.submit()" class="form-select">
-                        <option value="">Sắp xếp theo giá</option>
-                        <option value="asc">Giá tăng dần</option>
-                        <option value="desc">Giá giảm dần</option>
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="">Sắp xếp theo...</option>
+                        <option value="asc">Phần trăm được giảm</option>
                     </select>
-                    </form>
                 </div>
                 <div class="col-md-5 text-end">
-                    <a class="btn btn-primary" href="them_sanpham.php">Thêm sản phẩm</a>
+                    <a href="them_magiamgia.php" class="btn btn-primary">+ Thêm mã giảm giá</a>
                 </div>
-            </div>
-
-
-            <!-- Bảng -->
-            <form action="" method="get">
+            </form>
+ <form action="" method="get">
                 <select name="limit" onchange="this.form.submit()" id="">
                     <option <?= isset($_GET["limit"]) && $_GET["limit"]==5 ? "selected":"" ?> value="5">5</option>
                     <option <?= isset($_GET["limit"]) && $_GET["limit"]==20 ? "selected":"" ?> value="20">20</option>
@@ -327,61 +288,50 @@ $timkiem = "
                     <option <?= isset($_GET["limit"]) && $_GET["limit"]==100 ? "selected":"" ?> value="100">100</option>
                 </select>
             </form>
+            <!-- Bảng -->
             <table class="table table-bordered">
-                <thead>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Mã</th>
+                    <th>Giảm (%)</th>
+                    <th>Hạn sử dụng</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($dsMa as $ds): ?>
                     <tr>
-                        <th>ID</th>
-                        <th>Tên</th>
-                        <th>Miêu tả</th>
-                        <th>Giá</th>
-                        <th>Ảnh</th>
-                        <th>Loại</th>
-                        <th>Thêm size</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($sanphams as $sp): ?>
-                    <?php
-            $images = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$sp['id']]);
-          ?>
-                    <tr>
-                        <td><?= $sp['id'] ?></td>
-                        <td><?= $sp['ten'] ?></td>
-                        <td><?= $sp['moTa'] ?></td>
-                        <td><?= number_format($sp['gia'], 0, ',', '.') ?> đ</td>
+                        <td><?= $ds['id'] ?></td>
+                        <td><?= $ds['ma'] ?></td>
+                        <td><?= $ds['phanTramGiam'] ?>%</td>
+                        <td><?= $ds['hanSuDung'] ?></td>
                         <td>
-                            <?php foreach ($images as $img): ?>
-                            <img src="<?= $img['anh'] ?>" width="60" />
-                            <?php endforeach; ?>
-                        </td>
-                        <td><?= $sp['category_name'] ?></td>
-                        <td><a class="btn btn-sm btn-warning" href="themsize.php?id=<?= $sp['id'] ?>">Thêm size</a></td>
-                        <td>
-                            <a class="btn btn-sm btn-warning" href="sua_sanpham.php?id=<?= $sp['id'] ?>">Sửa</a>
-                            <a class="btn btn-sm btn-danger" href="delete_sanpham.php?id=<?= $sp['id'] ?>">Xóa</a>
-                            <a class="btn btn-primary" href="xemchitiet.php?id=<?= $sp['id'] ?>">Xem chi tiết</a>
+                            <a href="sua_magiamgia.php?id=<?= $ds['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
+                            <a href="xoa_magiamgia.php?id=<?= $ds['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa mã này?')">Xóa</a>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
             <!-- Phân trang -->
             <nav>
                 <ul class="pagination">
-                    <?php for($index=1;$index<=$sotrang;$index++){?>
-                    <li class="page-item <?= $index == $page ? "active":"" ?>">
-                        <a class="page-link"
-                            href="?<?=http_build_query(array_merge($_GET,["page"=>$index])) ?>"><?= $index ?></a>
+                    <?php for($i = 1; $i <= $sotrang; $i++): ?>
+                    <li class="page-item <?= ($page == $i ? 'active' : '') ?>">
+                        <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>">
+                            <?= $i ?>
+                        </a>
                     </li>
-                    <?php } ?>
+                    <?php endfor; ?>
                 </ul>
-
             </nav>
-
         </div>
     </div>
-</body>
+    <script src="assets/js/plugins.js"></script>
 
+    <!-- Main JS -->
+    <script src="assets/js/main.js"></script>
+</body>
 </html>

@@ -335,7 +335,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <p>
                                 <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
                                 <label for="">Nhập mật khẩu mới</label>
-                                <input type="text" name="matKhau" required>
+                                <input type="password" name="matKhau" required>
                             </p>
                             <button type="submit" name="doi">Đổi</button>
                         </form>

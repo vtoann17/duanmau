@@ -6,22 +6,89 @@ $db_util = new DB_UTILS();
 // Lấy ID sản phẩm từ URL
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Lấy thông tin sản phẩm chính
+// Lấy thông tin sản phẩm chính và kiểm tra tồn tại
 $sanPham = $db_util->getOne("SELECT sp.*, dm.tenDanhMuc 
                         FROM sanpham sp 
                         LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id 
-                        WHERE sp.id = $id");
+                        WHERE sp.id = ?", [$id]);
+if (!$sanPham) {
+    die("Không tìm thấy sản phẩm!");
+}
 
 // Lấy ảnh sản phẩm
-$anhSP = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = $id AND anhChinh = 1");
-$anhPhu = $db_util->getAll("SELECT anh FROM anhsanpham WHERE sanPhamID = $id AND anhChinh = 0");
-$kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
+$anhSP = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$id]);
+$anhPhu = $db_util->getAll("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 0", [$id]);
 
-// echo "<pre>";
-// var_dump($anhPhu);
-// echo "</pre>";
+// Lấy kích cỡ
+$kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = ?", [$id]);
 
+// Lấy sản phẩm liên quan (trừ sản phẩm hiện tại)
+$sanPhamLienQuan = $db_util->getAll("SELECT * FROM sanpham WHERE danhMucID = ? AND id != ? LIMIT 8", [$sanPham['danhMucID'], $id]);
+
+// Lấy sản phẩm upsell
+$upsellSanPham = $db_util->getAll("SELECT * FROM sanpham WHERE id != ? ORDER BY RAND() LIMIT 4", [$id]);
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
+    if (empty($_SESSION["user"])) {
+        header('Location: login.php');
+        exit();
+    }
+
+    $nguoiDungID = $_SESSION["user"]["id"];
+    $sanPhamID = intval($_POST['sanPhamID']);
+    $kichCoID = isset($_POST['kichCoID']) ? intval($_POST['kichCoID']) : 1;
+    $soLuong = isset($_POST['soLuong']) ? intval($_POST['soLuong']) : 1;
+
+    if (empty($kichCoID)) {
+        echo "Vui lòng chọn size!";
+        exit();
+    }
+
+    $cart = $db_util->getOne("SELECT * FROM giohang WHERE nguoiDungID = ? AND sanPhamID = ? AND kichCoID = ?", [$nguoiDungID, $sanPhamID, $kichCoID]);
+
+    if (!$cart) {
+        $sp = $db_util->getOne("SELECT gia FROM sanpham WHERE id = ?", [$sanPhamID]);
+        $gia = $sp ? $sp['gia'] : 0;
+
+        $db_util->execute("INSERT INTO giohang (nguoiDungID, sanPhamID, kichCoID, soLuong, gia) VALUES (?, ?, ?, ?, ?)", [$nguoiDungID, $sanPhamID, $kichCoID, $soLuong, $gia]);
+    } else {
+        $new_quantity = $cart['soLuong'] + $soLuong;
+        $db_util->execute("UPDATE giohang SET soLuong = ? WHERE id = ?", [$new_quantity, $cart['id']]);
+    }
+
+    header("Location: cart.php");
+    exit();
+}
+
+if (isset($_GET['delete_id']) && !empty($_SESSION['user'])) {
+    $idCanXoa = intval($_GET['delete_id']);
+    $nguoiDungID = $_SESSION['user']['id'];
+    $db_util->execute("DELETE FROM giohang WHERE id = ? AND nguoiDungID = ?", [$idCanXoa, $nguoiDungID]);
+    header("Location: cart.php");
+    exit();
+}
+
+$gioHang = [];
+if (!empty($_SESSION['user'])) {
+    $nguoiDungID = $_SESSION['user']['id'];
+    $gioHang = $db_util->getAll("
+        SELECT 
+            gh.id,
+            gh.sanPhamID,
+            sp.ten AS tensp,
+            kc.size,
+            gh.soLuong,
+            gh.gia,
+            (gh.soLuong * gh.gia) AS thanhTien
+        FROM giohang gh
+        JOIN sanpham sp ON gh.sanPhamID = sp.id
+        JOIN kichco kc ON gh.kichCoID = kc.id
+        WHERE gh.nguoiDungID = ?
+    ", [$nguoiDungID]);
+}
 ?>
+
 <!doctype html>
 <html class="no-js" lang="en">
 
@@ -90,7 +157,7 @@ $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
         <!--header top start-->
 
         <!-- Đổ dữ liệu vào giỏ hàng -->
-        <div class="header_middel">
+         <div class="header_middel">
             <div class="container-fluid">
                 <div class="middel_inner">
                     <div class="row align-items-center">
@@ -110,41 +177,35 @@ $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
                         <div class="col-lg-4">
                             <div class="cart_area">
                                 <div class="cart_link">
-                                    <a href="#"><i class="fa fa-shopping-basket"></i>2 sản phẩm</a>
+                                    <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
+                                           <?php $tongTien = 0;
+                                     foreach($gioHang as $gh):
+                                     $tongTien += $gh['thanhTien'];
+                                     $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
+                                            
                                             <div class="cart_img">
-                                                <a href="#"><img src="assets/img/s-product/product.jpg" alt=""></a>
+                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
                                             <div class="cart_info">
-                                                <a href="#">Apple iPhone SE 16GB</a>
+                                                <a href="#"><?= $gh['tensp']?></a>
 
-                                                <span>1x $60.00</span>
+                                                <span><?= $gh['soLuong']?> </span>
+                                                <span><?= number_format($gh['gia'])?>đ</span>
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="#"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
                                             </div>
-                                        </div>
-                                        <div class="cart_item bottom">
-                                            <div class="cart_img">
-                                                <a href="#"><img src="assets/img/s-product/product2.jpg" alt=""></a>
-                                            </div>
-                                            <div class="cart_info">
-                                                <a href="#">Marshall Portable Bluetooth</a>
-                                                <span> 1x $160.00</span>
-                                            </div>
-                                            <div class="cart_remove">
-                                                <a href="#"><i class="ion-android-close"></i></a>
-                                            </div>
-                                        </div>
+                                        </div><?php endforeach;?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
                                                     <tr>
-                                                        <td class="text-left">Sub-Total :</td>
-                                                        <td class="text-right">$150.00</td>
+                                                        <td class="text-left">Tổng phụ</td>
+                                                        <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
 
                                                     <tr>
@@ -220,7 +281,7 @@ $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
                                 <nav>
                                     <ul>
                                         <li class="active"><a href="index.php">Trang chủ </a></li>
-                                        <li><a href="shop_category.php">Sản phẩm </a></li>
+                                        <li><a href="products.php">Sản phẩm </a></li>
                                         <li><a href="about.php">Giới thiệu</a></li>
                                         <li><a href="#">Trang <i class="fa fa-angle-down"></i></a>
                                             <ul class="sub_menu pages">
@@ -260,7 +321,7 @@ $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
     <!--breadcrumbs area end-->
 
     <!--product details start-->
-    <div class="product_details">
+     <div class="product_details">
         <div class="container">
             <div class="row">
                 <div class="col-lg-5 col-md-5">
@@ -277,9 +338,10 @@ $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
                             <ul class="s-tab-zoom owl-carousel single-product-active" id="gallery_01">
                                 <?php foreach($anhPhu as $ap):?>
                                 <li>
-                                    <a href="#">
-                                        <img id="zoom1" src="<?= $ap['anh'] ?>"
-                                            data-zoom-image="<?= $ap['anh']; ?>" alt="big-1">
+                                    <a href="#" class="elevatezoom-gallery active" data-update=""
+                                        data-image="<?= $ap['anh']?>" data-zoom-image="<?= $ap['anh']?>">
+                                        <img id="zoom1" src="<?= $ap['anh'] ?>" data-zoom-image="<?= $ap['anh']; ?>"
+                                            alt="big-1">
                                     </a>
                                 </li>
                                 <?php endforeach; ?>
@@ -290,8 +352,9 @@ $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
                 </div>
                 <div class="col-lg-7 col-md-7">
                     <div class="product_d_right">
-                        <form action="#">
-
+                        <form action="" method="post">
+                            <input type="hidden" name="action" value="add_to_cart">
+                            <input type="hidden" name="sanPhamID" value="<?= $sanPham['id'] ?>">
                             <h1><?php echo $sanPham['ten']; ?></h1>
                             <div class=" product_ratting">
                                 <ul>
@@ -312,41 +375,28 @@ $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
                             </div>
                             <div class="product_variant size">
                                 <h3>size</h3>
-                                <select class="niceselect_option" id="color1" name="produc_color">
+                                <select class="niceselect_option" id="color1" name="kichCoID">
                                     <option value="">Chọn size</option>
                                     <?php foreach($kichco as $kc): ?>
 
-                                    <option value="<?php $kc['id']?>"><?= $kc['size'] ?></option>
+                                    <option value="<?= $kc['id'] ?>"><?= $kc['size'] ?></option>
 
                                     <?php endforeach;?>
                                 </select>
                             </div>
                             <div class="product_variant quantity">
                                 <label>Số lượng</label>
-                                <input min="1" max="100" value="1" type="number">
+                                <input min="1" max="100" value="1" type="number" name="soLuong">
                                 <button class="button" type="submit">Thêm vào giỏ hàng</button>
                             </div>
                             <div class=" product_d_action">
                                 <ul>
-                                    <li><a href="#" title="Add to wishlist"><i class="fa fa-heart-o"
+                                    <li><a href="dsyeuthich.php?id=<?php echo $sanPham['id'] ?>"  title="Add to wishlist"><i class="fa fa-heart-o"
                                                 aria-hidden="true"></i> Thêm vào danh sách yêu thích</a></li>
-                                    <li><a href="#" title="Add to Compare"><i class="fa fa-sliders"
-                                                aria-hidden="true"></i> So sánh sản phẩm</a></li>
                                 </ul>
                             </div>
 
                         </form>
-                        <div class="priduct_social">
-                            <h3>Chia sẻ:</h3>
-                            <ul>
-                                <li><a href="#"><i class="fa fa-rss"></i></a></li>
-                                <li><a href="#"><i class="fa fa-vimeo"></i></a></li>
-                                <li><a href="#"><i class="fa fa-tumblr"></i></a></li>
-                                <li><a href="#"><i class="fa fa-pinterest"></i></a></li>
-                                <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
-                            </ul>
-                        </div>
-
                     </div>
                 </div>
             </div>
@@ -486,57 +536,50 @@ $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
                 <div class="col-12">
                     <div class="section_title">
                         <h2>Sản phẩm liên quan</h2>
-                        <p>Contemporary, minimal and modern designs embody the Lavish Alice handwriting</p>
+                        <p>Các thiết kế đương đại, tối giản và hiện đại thể hiện chữ viết tay Lavish Alice</p>
                     </div>
                 </div>
             </div>
             <div class="product_area">
                 <div class="row">
                     <div class="product_carousel product_three_column4 owl-carousel">
+                        <?php foreach ($sanPhamLienQuan as $sp): ?>
                         <div class="col-lg-3">
                             <div class="single_product">
                                 <div class="product_thumb">
-                                    <a class="primary_img" href="product-details.html"><img
-                                            src="assets/img/product/product21.jpg" alt=""></a>
-                                    <a class="secondary_img" href="product-details.html"><img
-                                            src="assets/img/product/product22.jpg" alt=""></a>
+                                    <?php
+                    $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = {$sp['id']} AND anhChinh = 1");
+                ?>
+                                    <a class="primary_img" href="product-details.php?id=<?= $sp['id'] ?>">
+                                        <img src="<?= $anh['anh'] ?>" alt="<?= $sp['ten'] ?>">
+                                    </a>
                                     <div class="product_action">
                                         <div class="hover_action">
                                             <a href="#"><i class="fa fa-plus"></i></a>
                                             <div class="action_button">
                                                 <ul>
-
-                                                    <li><a title="add to cart" href="cart.html"><i
-                                                                class="fa fa-shopping-basket"
+                                                    <li><a title="add to cart" href="#"><i class="fa fa-shopping-basket"
                                                                 aria-hidden="true"></i></a></li>
-                                                    <li><a href="wishlist.html" title="Add to Wishlist"><i
+                                                    <li><a href="dsyeuthich.php?id=<?php echo $sanPham['id'] ?>" title="Add to Wishlist"><i
                                                                 class="fa fa-heart-o" aria-hidden="true"></i></a></li>
-
-                                                    <li><a href="compare.html" title="Add to Compare"><i
-                                                                class="fa fa-sliders" aria-hidden="true"></i></a></li>
-
                                                 </ul>
                                             </div>
                                         </div>
-
                                     </div>
                                     <div class="quick_button">
-                                        <a href="#" data-toggle="modal" data-target="#modal_box" title="quick_view">+
-                                            quick view</a>
-                                    </div>
-
-                                    <div class="product_sale">
-                                        <span>-7%</span>
+                                        <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">+ quick
+                                            view</a>
                                     </div>
                                 </div>
                                 <div class="product_content">
-                                    <h3><a href="product-details.html">Marshall Portable Bluetooth</a></h3>
-                                    <span class="current_price">£60.00</span>
-                                    <span class="old_price">£86.00</span>
+                                    <h3><a href="product-details.php?id=<?= $sp['id'] ?>"><?= $sp['ten'] ?></a></h3>
+                                    <span class="current_price"><?= number_format($sp['gia']) ?>đ</span>
                                 </div>
                             </div>
                         </div>
+                        <?php endforeach; ?>
                     </div>
+
                 </div>
             </div>
 
@@ -551,57 +594,50 @@ $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = $id");
                 <div class="col-12">
                     <div class="section_title">
                         <h2>Sản phẩm upsell</h2>
-                        <p>Contemporary, minimal and modern designs embody the Lavish Alice handwriting</p>
+                        <p>Các thiết kế đương đại, tối giản và hiện đại thể hiện chữ viết tay Lavish Alice</p>
                     </div>
                 </div>
             </div>
             <div class="product_area">
                 <div class="row">
                     <div class="product_carousel product_three_column4 owl-carousel">
+                        <?php foreach ($upsellSanPham as $sp): ?>
                         <div class="col-lg-3">
                             <div class="single_product">
                                 <div class="product_thumb">
-                                    <a class="primary_img" href="product-details.html"><img
-                                            src="assets/img/product/product15.jpg" alt=""></a>
-                                    <a class="secondary_img" href="product-details.html"><img
-                                            src="assets/img/product/product16.jpg" alt=""></a>
+                                    <?php
+                    $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = {$sp['id']} AND anhChinh = 1");
+                ?>
+                                    <a class="primary_img" href="product-details.php?id=<?= $sp['id'] ?>">
+                                        <img src="<?= $anh['anh'] ?>" alt="<?= $sp['ten'] ?>">
+                                    </a>
                                     <div class="product_action">
                                         <div class="hover_action">
                                             <a href="#"><i class="fa fa-plus"></i></a>
                                             <div class="action_button">
                                                 <ul>
-
-                                                    <li><a title="add to cart" href="cart.html"><i
-                                                                class="fa fa-shopping-basket"
+                                                    <li><a title="add to cart" href="#"><i class="fa fa-shopping-basket"
                                                                 aria-hidden="true"></i></a></li>
-                                                    <li><a href="wishlist.html" title="Add to Wishlist"><i
+                                                    <li><a href="dsyeuthich.php?id=<?php echo $sanPham['id'] ?>" title="Add to Wishlist"><i
                                                                 class="fa fa-heart-o" aria-hidden="true"></i></a></li>
-
-                                                    <li><a href="compare.html" title="Add to Compare"><i
-                                                                class="fa fa-sliders" aria-hidden="true"></i></a></li>
-
                                                 </ul>
                                             </div>
                                         </div>
-
                                     </div>
                                     <div class="quick_button">
-                                        <a href="#" data-toggle="modal" data-target="#modal_box" title="quick_view">+
-                                            quick view</a>
-                                    </div>
-
-                                    <div class="product_sale">
-                                        <span>-7%</span>
+                                        <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">+ quick
+                                            view</a>
                                     </div>
                                 </div>
                                 <div class="product_content">
-                                    <h3><a href="product-details.html">Marshall Portable Bluetooth</a></h3>
-                                    <span class="current_price">£60.00</span>
-                                    <span class="old_price">£86.00</span>
+                                    <h3><a href="product-details.php?id=<?= $sp['id'] ?>"><?= $sp['ten'] ?></a></h3>
+                                    <span class="current_price"><?= number_format($sp['gia']) ?>đ</span>
                                 </div>
                             </div>
                         </div>
+                        <?php endforeach; ?>
                     </div>
+
                 </div>
             </div>
 

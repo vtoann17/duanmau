@@ -2,6 +2,12 @@
 session_start();
   require_once "./db_utils.php";
   $db_utils = new DB_UTILS();
+  $limit =  $_GET["limit"] ?? 5;
+$page = $_GET["page"] ??  1;
+$offset = ($page -1) * $limit;
+
+$tongdong = $db_utils->getValue("SELECT COUNT(*) FROM sanpham");
+$sotrang = ceil($tongdong/$limit);
   $dsSanPham = $db_utils->getAll("
     SELECT sp.id, sp.ten, sp.gia, sp.moTa, asp.anh
     FROM sanpham sp
@@ -14,7 +20,29 @@ session_start();
 //   echo "<pre>";
 //   die;
 
-
+if (isset($_GET['delete_id'])) {
+    $idCanXoa = intval($_GET['delete_id']);
+    // Xóa sản phẩm khỏi giỏ nếu đúng ID và thuộc về user
+    $db_util->execute("DELETE FROM giohang WHERE id = ? AND nguoiDungID = ?", [$idCanXoa, $nguoiDungID]);
+    header("Location: cart.php"); // reload lại để tránh xóa lặp
+    exit();
+}
+$nguoiDungID = $_SESSION['user']['id'];
+$nguoidung = $db_utils->getAll("SELECT * FROM giohang WHERE nguoiDungID = ?", [$nguoiDungID]);
+$gioHang = $db_utils->getAll("
+    SELECT 
+        gh.id,
+        gh.sanPhamID,
+        sp.ten AS tensp,
+        kc.size,
+        gh.soLuong,
+        gh.gia AS gia,
+        (gh.soLuong * gh.gia) AS thanhTien
+    FROM giohang gh
+    JOIN sanpham sp ON gh.sanPhamID = sp.id
+    JOIN kichco kc ON gh.kichCoID = kc.id
+    WHERE gh.nguoiDungID = ?
+", [$nguoiDungID]);
 ?>
 <!doctype html>
 <html class="no-js" lang="en">
@@ -37,6 +65,61 @@ session_start();
     
     <!-- Main Style CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .product_thumb {
+    position: relative;
+    overflow: hidden;
+}
+
+.wishlist_icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.wishlist_icon a {
+    background: white;
+    border-radius: 50%;
+    padding: 6px;
+    color: #ff4c4c;
+    font-size: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.product_hover_buttons {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    text-align: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.product_hover_buttons .btn {
+    display: block;
+    background-color: #000;
+    color: white;
+    padding: 8px 15px;
+    margin: 5px 0;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.product_hover_buttons .btn:hover {
+    background-color: #ff4c4c;
+}
+
+.single_product:hover .wishlist_icon,
+.single_product:hover .product_hover_buttons {
+    opacity: 1;
+}
+    </style>
 
 </head>
 
@@ -313,7 +396,7 @@ session_start();
                     <div class="row align-items-center">
                         <div class="col-lg-4">
                             <div class="search_bar">
-                                <form action="#">                          
+                                <form action="#">
                                     <input placeholder="Search entire store here..." type="text">
                                     <button type="submit"><i class="ion-ios-search-strong"></i></button>
                                 </form>
@@ -327,57 +410,51 @@ session_start();
                         <div class="col-lg-4">
                             <div class="cart_area">
                                 <div class="cart_link">
-                                    <a href="#"><i class="fa fa-shopping-basket"></i>2 sản phẩm</a>
+                                    <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
-                                     <div class="mini_cart">
+                                    <div class="mini_cart">
+                                           <?php $tongTien = 0;
+                                     foreach($gioHang as $gh):
+                                     $tongTien += $gh['thanhTien'];
+                                     $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
-                                       <div class="cart_img">
-                                           <a href="#"><img src="assets/img/s-product/product.jpg" alt=""></a>
-                                       </div>
-                                        <div class="cart_info">
-                                            <a href="#">Apple iPhone SE 16GB</a>
+                                            
+                                            <div class="cart_img">
+                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
+                                            </div>
+                                            <div class="cart_info">
+                                                <a href="#"><?= $gh['tensp']?></a>
 
-                                            <span>1x $60.00</span>
-    
+                                                <span><?= $gh['soLuong']?> </span>
+                                                <span><?= number_format($gh['gia'])?>đ</span>
+
+                                            </div>
+                                            <div class="cart_remove">
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
+                                            </div>
+                                        </div><?php endforeach;?>
+                                        <div class="cart__table">
+                                            <table>
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="text-left">Tổng phụ</td>
+                                                        <td class="text-right"><?= number_format($tongTien) ?>đ</td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td class="text-left">Total :</td>
+                                                        <td class="text-right">$184.00</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
-                                        <div class="cart_remove">
-                                            <a href="#"><i class="ion-android-close"></i></a>
+
+                                        <div class="cart_button view_cart">
+                                            <a href="cart.php">View Cart</a>
                                         </div>
-                                    </div>
-                                    <div class="cart_item bottom">
-                                       <div class="cart_img">
-                                           <a href="#"><img src="assets/img/s-product/product2.jpg" alt=""></a>
-                                       </div>
-                                        <div class="cart_info">
-                                            <a href="#">Marshall Portable  Bluetooth</a>
-                                                <span> 1x $160.00</span>
+                                        <div class="cart_button checkout">
+                                            <a href="checkout.php">Checkout</a>
                                         </div>
-                                        <div class="cart_remove">
-                                            <a href="#"><i class="ion-android-close"></i></a>
-                                        </div>
-                                    </div>
-                                    <div class="cart__table">
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="text-left">Sub-Total :</td>
-                                                    <td class="text-right">$150.00</td>
-                                                </tr>
-                                             
-                                                <tr>
-                                                    <td class="text-left">Total :</td>
-                                                    <td class="text-right">$184.00</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    
-                                    <div class="cart_button view_cart">
-                                        <a href="cart.php">View Cart</a>
-                                    </div>
-                                    <div class="cart_button checkout">
-                                        <a href="checkout.php">Checkout</a>
-                                    </div>
                                     </div>
                                     <!--mini cart end-->
                                 </div>
@@ -387,12 +464,14 @@ session_start();
                 </div>
                 <div class="horizontal_menu">
                     <div class="left_menu">
-                        <div class="main_menu"> 
-                            <nav>  
+                        <div class="main_menu">
+                            <nav>
                                 <ul>
-                                    <li class="active"><a href="index.php">Trang chủ <i class="fa fa-angle-down"></i></a>
+                                    <li class="active"><a href="index.php">Trang chủ <i
+                                                class="fa fa-angle-down"></i></a>
                                     </li>
-                                    <li class="mega_items"><a href="products.php">Sản phẩm <i class="fa fa-angle-down"></i></a>
+                                    <li class="mega_items"><a href="products.php">Sản phẩm <i
+                                                class="fa fa-angle-down"></i></a>
                                     </li>
                                     <li><a href="blog.php">Blog <i class="fa fa-angle-down"></i></a>
                                     </li>
@@ -402,22 +481,22 @@ session_start();
                                             <li><a href="login.php">Đăng nhập</a></li>
                                         </ul>
                                     </li>
-                                </ul> 
-                            </nav> 
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                     <div class="logo_container">
                         <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
                     </div>
                     <div class="right_menu">
-                        <div class="main_menu"> 
-                            <nav>  
+                        <div class="main_menu">
+                            <nav>
                                 <ul>
                                     <li><a href="#">Đặc biệt</a></li>
                                     <li><a href="about.php">Giới thiệu</a></li>
                                     <li><a href="contact.php">Liên hệ</a></li>
-                                </ul> 
-                            </nav> 
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
@@ -582,16 +661,30 @@ session_start();
                             <p>Hiển thị 1–9 của 21 sản phẩm</p>
                         </div>
                     </div>
-
+<form action="" method="get">
+                <select name="limit" onchange="this.form.submit()" id="">
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==5 ? "selected":"" ?> value="5">5</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==20 ? "selected":"" ?> value="20">20</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==50 ? "selected":"" ?> value="50">50</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==100 ? "selected":"" ?> value="100">100</option>
+                </select>
+            </form>
                     <div class="row shop_wrapper">
                         <?php foreach($dsSanPham as $sanpham): ?>
                         <div class="col-lg-4 col-md-4 col-12 ">
                             <div class="single_product">
                                 <div class="product_thumb">
-                                    <a class="primary_img" href="product-details.php"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
-                                    <a class="secondary_img" href="product-details.php"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
+                                    <div class="wishlist_icon">
+                                                <ul>
+                                                    <li><a href="dsyeuthich.php?id=<?= $sanpham['id'] ?>" title="Thêm vào danh sách yêu thích"><i class="fa fa-heart-o"
+                                                                aria-hidden="true"></i></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                    <a class="primary_img" href="product-details.php?id=<?= $sanpham['id']?>"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
+                                    <a class="secondary_img" href="product-details.php?id=<?= $sanpham['id']?>"><img src="<?php echo $sanpham['anh']; ?>" alt=""></a>
                                     <div class="quick_button">
-                                        <a href="product-details.php?id=<?= $sanpham['id'] ?>" title="Xem nhanh">Xem sản phẩm</a>
+                                        <a href="product-details.php?id=<?= $sanpham['id'] ?>" title="Xem nhanh">Xem chi tiết</a> <br>
                                     </div>
                                     <!-- <div class="double_base">
                                         <div class="product_sale">
@@ -632,17 +725,17 @@ session_start();
                     </div>
 
                     <!-- Phân trang -->
-                    <div class="shop_toolbar t_bottom">
-                        <div class="pagination">
-                            <ul>
-                                <li class="current">1</li>
-                                <li><a href="#">2</a></li>
-                                <li><a href="#">3</a></li>
-                                <li class="next"><a href="#">Tiếp</a></li>
-                                <li><a href="#">>></a></li>
-                            </ul>
-                        </div>
-                    </div>
+                     <nav>
+                <ul class="pagination">
+                    <?php for($i = 1; $i <= $sotrang; $i++): ?>
+                    <li class="page-item <?= ($page == $i ? 'active' : '') ?>">
+                        <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>">
+                            <?= $i ?>
+                        </a>
+                    </li>
+                    <?php endfor; ?>
+                </ul>
+            </nav>
                     <!-- Kết thúc phần sản phẩm -->
                 </div>
             </div>
