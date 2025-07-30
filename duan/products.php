@@ -125,271 +125,49 @@ $gioHang = $db_utils->getAll("
 
 <body>
 
-    <!-- Main Wrapper Start -->
-    <!--Offcanvas menu area start-->
-    <div class="off_canvars_overlay">
-                
-    </div>
-     <div class="offcanvas_menu">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="canvas_open">
-                        <a href="javascript:void(0)"><i class="ion-navicon"></i></a>
-                    </div>
-                    <div class="offcanvas_menu_wrapper">
-                        <div class="canvas_close">
-                            <a href="javascript:void(0)"><i class="ion-android-close"></i></a>
-                        </div>
-                        <div class="top_right">
-                            <ul>
-                                <li class="top_links"><a href="#">Tài khoản <i class="ion-chevron-down"></i></a>
-                                    <ul class="dropdown_links">
-                                        <li><a href="wishlist.php">Danh sách yêu thích</a></li>
-                                        <li><a href="my-account.php">Tài khoản của tôi</a></li>
-                                        <li><a href="#">Đăng nhập</a></li>
-                                        <li><a href="dangxuat.php">Đăng xuất</a></li>
-                                    </ul>
-                                </li>
-                                <li class="language"><a href="#"><img src="assets/img/logo/language.png" alt=""> Ngôn
-                                        ngữ <i class="ion-chevron-down"></i></a>
-                                    <ul class="dropdown_language">
-                                        <li><a href="#"><img src="assets/img/logo/cigar.jpg" alt=""> Tiếng Pháp</a></li>
-                                        <li><a href="#"><img src="assets/img/logo/language2.png" alt="">Tiếng Đức</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="currency"><a href="#">Tiền tệ <i class="ion-chevron-down"></i></a>
-                                    <ul class="dropdown_currency">
-                                        <li><a href="#">EUR</a></li>
-                                        <li><a href="#">BRL</a></li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="search_bar">
-                            <form action="#">
-                                <select class="select_option" name="select" id="categori">
-                                    <option selected value="1">Tất cả danh mục</option>
-                                    <option value="2">Phụ kiện</option>
-                                    <option value="3">Bridge</option>
-                                    <option value="4">Hub</option>
-                                    <option value="5">Repeater</option>
-                                    <option value="6">Switch</option>
-                                    <option value="7">Trò chơi điện tử</option>
-                                    <option value="8">PlayStation 3</option>
-                                    <option value="9">PlayStation 4</option>
-                                    <option value="10">Xbox 360</option>
-                                    <option value="11">Xbox One</option>
-                                </select>
-                                <input placeholder="Tìm kiếm sản phẩm..." type="text">
-                                <button type="submit"><i class="ion-ios-search-strong"></i></button>
-                            </form>
-                        </div>
-                        <div class="cart_area">
-                            <div class="middel_links">
-                                <ul>
-                                    <li><a href="login.html">Đăng nhập</a></li>
-                                    <li>/</li>
-                                    <li><a href="login.html">Đăng ký</a></li>
-                                </ul>
-                            </div>
-                            <div class="cart_link">
-                                <a href="#"><i class="fa fa-shopping-basket"></i>2 sản phẩm</a>
-                                <!-- mini cart -->
-                                <div class="mini_cart">
-                                    <div class="cart_item top">
-                                        <div class="cart_img">
-                                            <a href="#"><img src="assets/img/s-product/product.jpg" alt=""></a>
-                                        </div>
-                                        <div class="cart_info">
-                                            <a href="#">Apple iPhone SE 16GB</a>
-                                            <span>1x $60.00</span>
-                                        </div>
-                                        <div class="cart_remove">
-                                            <a href="#"><i class="ion-android-close"></i></a>
-                                        </div>
-                                    </div>
-                                    <div class="cart_item bottom">
-                                        <div class="cart_img">
-                                            <a href="#"><img src="assets/img/s-product/product2.jpg" alt=""></a>
-                                        </div>
-                                        <div class="cart_info">
-                                            <a href="#">Loa Bluetooth Marshall</a>
-                                            <span>1x $160.00</span>
-                                        </div>
-                                        <div class="cart_remove">
-                                            <a href="#"><i class="ion-android-close"></i></a>
-                                        </div>
-                                    </div>
-                                    <div class="cart__table">
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="text-left">Tạm tính :</td>
-                                                    <td class="text-right">$150.00</td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="text-left">Tổng cộng :</td>
-                                                    <td class="text-right">$184.00</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="cart_button view_cart">
-                                        <a href="cart.html">Xem giỏ hàng</a>
-                                    </div>
-                                    <div class="cart_button checkout">
-                                        <a href="checkout.html">Thanh toán</a>
-                                    </div>
-                                </div>
-                                <!-- mini cart end -->
-                            </div>
-                        </div>
-                        <div class="contact_phone">
-                            <p>Gọi hỗ trợ miễn phí: <a href="tel:+(012)800456789">(+012) 800 456 789</a></p>
-                        </div>
-                        <div id="menu" class="text-left">
-                            <ul class="offcanvas_main_menu">
-                                <li class="menu-item-has-children active">
-                                    <a href="#">Trang chủ</a>
-                                    <ul class="sub-menu">
-                                        <li><a href="index.php">Trang chủ 1</a></li>
-                                        <li><a href="index-2.php">Trang chủ 2</a></li>
-                                        <li><a href="index-3.php">Trang chủ 3</a></li>
-                                        <li><a href="index-4.php">Trang chủ 4</a></li>
-                                        <li><a href="index-5.php">Trang chủ 5</a></li>
-                                        <li><a href="index-6.php">Trang chủ 6</a></li>
-                                        <li><a href="index-7.php">Trang chủ 7</a></li>
-                                        <li><a href="index-8.php">Trang chủ 8</a></li>
-                                        <li><a href="index-9.php">Trang chủ 9</a></li>
-                                    </ul>
-                                </li>
-                                <li class="menu-item-has-children">
-                                    <a href="#">Cửa hàng</a>
-                                    <ul class="sub-menu">
-                                        <li class="menu-item-has-children">
-                                            <a href="#">Bố cục cửa hàng</a>
-                                            <ul class="sub-menu">
-                                                <li><a href="products.php">Cửa hàng</a></li>
-                                                <li><a href="shop-fullwidth.php">Toàn màn hình</a></li>
-                                                <li><a href="shop-fullwidth-list.php">Toàn màn hình dạng danh sách</a>
-                                                </li>
-                                                <li><a href="shop-right-sidebar.php">Thanh bên phải</a></li>
-                                                <li><a href="shop-right-sidebar-list.php">Danh sách bên phải</a></li>
-                                                <li><a href="shop-list.php">Dạng danh sách</a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="menu-item-has-children">
-                                            <a href="#">Trang khác</a>
-                                            <ul class="sub-menu">
-                                                <li><a href="portfolio.php">Danh mục</a></li>
-                                                <li><a href="portfolio-details.php">Chi tiết danh mục</a></li>
-                                                <li><a href="cart.php">Giỏ hàng</a></li>
-                                                <li><a href="checkout.php">Thanh toán</a></li>
-                                                <li><a href="my-account.php">Tài khoản của tôi</a></li>
-                                            </ul>
-                                        </li>
-                                        <li class="menu-item-has-children">
-                                            <a href="#">Loại sản phẩm</a>
-                                            <ul class="sub-menu">
-                                                <li><a href="product-details.php">Chi tiết sản phẩm</a></li>
-                                                <li><a href="product-sidebar.php">Sản phẩm có sidebar</a></li>
-                                                <li><a href="product-grouped.php">Sản phẩm nhóm</a></li>
-                                                <li><a href="variable-product.php">Sản phẩm biến thể</a></li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="menu-item-has-children">
-                                    <a href="#">Blog</a>
-                                    <ul class="sub-menu">
-                                        <li><a href="blog.php">Blog</a></li>
-                                        <li><a href="blog-details.php">Chi tiết blog</a></li>
-                                        <li><a href="blog-sidebar.php">Blog có sidebar</a></li>
-                                        <li><a href="blog-fullwidth.php">Blog toàn màn hình</a></li>
-                                    </ul>
-                                </li>
-                                <li class="menu-item-has-children">
-                                    <a href="#">Trang</a>
-                                    <ul class="sub-menu">
-                                        <li><a href="about.php">Về chúng tôi</a></li>
-                                        <li><a href="contact.php">Liên hệ</a></li>
-                                        <li><a href="login.php">Đăng nhập</a></li>
-                                    </ul>
-                                </li>
-                                <li class="menu-item-has-children">
-                                    <a href="my-account.php">Tài khoản</a>
-                                </li>
-                                <li class="menu-item-has-children">
-                                    <a href="about.php">Về chúng tôi</a>
-                                </li>
-                                <li class="menu-item-has-children">
-                                    <a href="contact.php">Liên hệ</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="offcanvas_footer">
-                            <span><a href="#"><i class="fa fa-envelope-o"></i> info@yourdomain.com</a></span>
-                            <ul>
-                                <li class="facebook"><a href="#"><i class="fa fa-facebook"></i></a></li>
-                                <li class="twitter"><a href="#"><i class="fa fa-twitter"></i></a></li>
-                                <li class="pinterest"><a href="#"><i class="fa fa-pinterest-p"></i></a></li>
-                                <li class="google-plus"><a href="#"><i class="fa fa-google-plus"></i></a></li>
-                                <li class="linkedin"><a href="#"><i class="fa fa-linkedin"></i></a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!--Offcanvas menu area end-->
-     
     <!--header area start-->
        <header class="header_area header_three">
         <!--header top start-->
         <div class="header_top">
-            <div class="container-fluid">   
+            <div class="container-fluid">
                 <div class="row align-items-center">
                     <div class="col-lg-7 col-md-12">
-                        
+
                     </div>
                     <div class="col-lg-5 col-md-12">
                         <div class="top_right text-right">
                             <ul>
-                             <li class="top_links"><a href="#">
-    <?php
+                                <li class="top_links"><a href="#">
+                                        <?php
         if (isset($_SESSION['user'])) {
             echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
         } else {
             echo 'Tài khoản của tôi';
         }
     ?>
-    <i class="ion-chevron-down"></i></a>
-    <ul class="dropdown_links">
-        <?php if (isset($_SESSION['user'])): ?>
-            <li><a href="wishlist.html">Danh mục yêu thích</a></li>
-            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-    
-            <?php endif; ?>
-            <li><a href="logout.php">Đăng xuất</a></li>
-        <?php else: ?>
-            <li><a href="login.php">Đăng nhập</a></li>
-        <?php endif; ?>
-    </ul>
-</li>
+                                        <i class="ion-chevron-down"></i></a>
+                                    <ul class="dropdown_links">
+                                        <?php if (isset($_SESSION['user'])): ?>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
+                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                        <?php endif; ?>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php else: ?>
+                                        <li><a href="login.php">Đăng nhập</a></li>
+                                        <?php endif; ?>
+                                    </ul>
+                                </li>
 
                             </ul>
-                        </div>   
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <!--header top start-->
 
-<!-- Đổ dữ liệu vào giỏ hàng -->
+        <!-- Đổ dữ liệu vào giỏ hàng -->
         <div class="header_middel">
             <div class="container-fluid">
                 <div class="middel_inner">
@@ -510,8 +288,8 @@ $gioHang = $db_utils->getAll("
                 <div class="row align-items-center">
                     <div class="col-12">
                         <div class="main_menu_inner">
-                            <div class="main_menu"> 
-                                <nav>  
+                            <div class="main_menu">
+                                <nav>
                                     <ul>
                                         <li class="active"><a href="index.php">Trang chủ </a></li>
                                         <li><a href="products.php">Sản phẩm </a></li>
@@ -523,19 +301,18 @@ $gioHang = $db_utils->getAll("
                                             </ul>
                                         </li>
                                         <li><a href="blog.php">blog</a></li>
-                                        
+
                                         <li><a href="contact.php">Liên hệ</a></li>
-                                    </ul>   
-                                </nav> 
+                                    </ul>
+                                </nav>
                             </div>
-                        </div> 
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <!--header bottom end-->
     </header>
-
     <!--breadcrumbs area start-->
     <div class="breadcrumbs_area">
         <div class="container">   

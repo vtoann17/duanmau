@@ -54,22 +54,25 @@ if (isset($_GET['id'])) {
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Cart page</title>
+    <title>Fashion eCommerce HTML Template</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="css/style.css">
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
-
+    
     <!-- CSS 
     ========================= -->
 
 
     <!-- Plugins CSS -->
     <link rel="stylesheet" href="assets/css/plugins.css">
-
+    
     <!-- Main Style CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
-
+    
 </head>
 
 <body>
@@ -97,10 +100,9 @@ if (isset($_GET['id'])) {
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <li><a href="dsyeuthich.php">Danh sách yêu thích</a></li>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                                         <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-
                                         <?php endif; ?>
                                         <li><a href="logout.php">Đăng xuất</a></li>
                                         <?php else: ?>
@@ -138,41 +140,36 @@ if (isset($_GET['id'])) {
                         <div class="col-lg-4">
                             <div class="cart_area">
                                 <div class="cart_link">
-                                    <a href="#"><i class="fa fa-shopping-basket"></i>2 sản phẩm</a>
+                                    <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
+                                        <?php $tongTien = 0;
+                                     foreach($gioHang as $gh):
+                                     $tongTien += $gh['thanhTien'];
+                                     $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
+
                                             <div class="cart_img">
-                                                <a href="#"><img src="assets/img/s-product/product.jpg" alt=""></a>
+                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
                                             <div class="cart_info">
-                                                <a href="#">Apple iPhone SE 16GB</a>
+                                                <a href="#"><?= $gh['tensp']?></a>
 
-                                                <span>1x $60.00</span>
+                                                <span><?= $gh['soLuong']?> </span>
+                                                <span><?= number_format($gh['gia'])?>đ</span>
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="#"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
                                             </div>
-                                        </div>
-                                        <div class="cart_item bottom">
-                                            <div class="cart_img">
-                                                <a href="#"><img src="assets/img/s-product/product2.jpg" alt=""></a>
-                                            </div>
-                                            <div class="cart_info">
-                                                <a href="#">Marshall Portable Bluetooth</a>
-                                                <span> 1x $160.00</span>
-                                            </div>
-                                            <div class="cart_remove">
-                                                <a href="#"><i class="ion-android-close"></i></a>
-                                            </div>
-                                        </div>
+                                        </div><?php endforeach;?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
                                                     <tr>
-                                                        <td class="text-left">Sub-Total :</td>
-                                                        <td class="text-right">$150.00</td>
+                                                        <td class="text-left">Tổng phụ</td>
+                                                        <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
 
                                                     <tr>
@@ -270,72 +267,83 @@ if (isset($_GET['id'])) {
         <!--header bottom end-->
     </header>
     <!--header area end-->
+    
 
-    <!--breadcrumbs area start-->
-    <div class="breadcrumbs_area other_bread">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="breadcrumb_content">
-                        <ul>
-                            <li><a href="index.php">Trang chủ</a></li>
-                            <li>/</li>
-                            <li>Danh sách yêu thích</li>
-                        </ul>
+    <div class="d-flex" >
+        <!-- Sidebar -->
+        <div
+            style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
+            <h2 class="text-center">Menu tài khoản</h2>
+            <ul class="nav flex-column mt-4">
+                <li class="nav-item"><a href="taikhoan.php" class="nav-link text-black"><i class="fas fa-user"></i>
+                        Thông tin tài khoản</a></li>
+                <li class="nav-item"><a href="dsyeuthich.php" class="nav-link text-black"><i class="fa fa-heart-o"></i>
+                        Danh sách yêu thích</a></li>
+                <li class="nav-item"><a href="lichsudonhang.php" class="nav-link text-black"><i
+                            class="fa fa-history"></i> Lịch sử đơn hàng</a></li>
+            </ul>
+        </div>
+        <div style="flex: 1;">
+        <div class="breadcrumbs_area other_bread">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="breadcrumb_content">
+                            <ul>
+                                <li><a href="index.php">Menu tài khoản</a></li>
+                                <li>/</li>
+                                <li>Danh sách yêu thích</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <!--breadcrumbs area end-->
-
-    <!-- shopping cart area start -->
-    <div class="shopping_cart_area">
-        <div class="container">
-            <form action="#">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="table_desc">
-                            <div class="cart_page table-responsive">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th class="product_remove">Xóa</th>
-                                            <th class="product_thumb">Hình ảnh</th>
-                                            <th class="product_name">tên sản phẩm</th>
-                                            <th class="product-price">Đơn giá</th>
-                                        </tr>
-                                    </thead>
-                                    <?php
+        <div class="shopping_cart_area" style="margin-top: 30px;">
+            <div class="container">
+                <form action="#">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="table_desc">
+                                <div class="cart_page table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th class="product_remove">Xóa</th>
+                                                <th class="product_thumb">Hình ảnh</th>
+                                                <th class="product_name">tên sản phẩm</th>
+                                                <th class="product-price">Đơn giá</th>
+                                            </tr>
+                                        </thead>
+                                        <?php
                                      foreach($dsyeuthich as $yt):
                                      $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$yt['sanPhamID']]); ?>
-                                    <tbody>
-                                        <tr>
-                                            <td class="product_remove">
-                                                <a href="dsyeuthich.php?delete_id=<?= $yt['id'] ?>"><i
-                                                        class="fa fa-trash-o"></i></a>
-                                            </td>
-                                            <td class="product_thumb">
-                                                <a href="product-details.php?id=<?= $yt['sanPhamID']?>"><img src="<?= $anh['anh'] ?>" alt=""
-                                                        style="width:80px;"></a>
-                                            </td>
-                                            <td class="product_name"><?= $yt['tensp'] ?></td>
-                                            <td class="product-price"><?= number_format($yt['gia']) ?>đ</td>
-                                        </tr>
-                                    </tbody>
-                                    <?php endforeach;?>
-                                </table>
+                                        <tbody>
+                                            <tr>
+                                                <td class="product_remove">
+                                                    <a href="dsyeuthich.php?delete_id=<?= $yt['id'] ?>"><i
+                                                            class="fa fa-trash-o"></i></a>
+                                                </td>
+                                                <td class="product_thumb">
+                                                    <a href="product-details.php?id=<?= $yt['sanPhamID']?>"><img
+                                                            src="<?= $anh['anh'] ?>" alt="" style="width:80px;"></a>
+                                                </td>
+                                                <td class="product_name"><?= $yt['tensp'] ?></td>
+                                                <td class="product-price"><?= number_format($yt['gia']) ?>đ</td>
+                                            </tr>
+                                        </tbody>
+                                        <?php endforeach;?>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- shopping cart area end -->
-
-    <!--footer area start-->
+    </div>
     <footer class="footer_widgets">
         <div class="footer_top">
             <div class="container">
@@ -375,7 +383,8 @@ if (isset($_GET['id'])) {
                             <h3>Contact Us</h3>
                             <div class="footer_contact">
                                 <p>Địa chỉ: 6688 Princess Road, London, Greater London BAS 23JK, UK</p>
-                                <p>Số điện thoại: <a href="tel:+(+012)800456789-987">(+012) 800 456 789 - 987</a> </p>
+                                <p>Số điện thoại: <a href="tel:+(+012)800456789-987">(+012) 800 456 789 - 987</a>
+                                </p>
                                 <p>Email: demo@example.com</p>
                                 <ul>
                                     <li><a href="#" title="Twitter"><i class="fa fa-twitter"></i></a></li>
@@ -391,7 +400,8 @@ if (isset($_GET['id'])) {
                         <div class="widgets_container newsletter">
                             <h3>Tham gia bản tin của chúng tôi ngay bây giờ</h3>
                             <div class="newleter-content">
-                                <p>Chất lượng vượt trội. Nhà máy có đạo đức. Đăng ký để được miễn phí vận chuyển và trả
+                                <p>Chất lượng vượt trội. Nhà máy có đạo đức. Đăng ký để được miễn phí vận chuyển và
+                                    trả
                                     hàng tại Hoa Kỳ cho đơn hàng đầu tiên của bạn.</p>
                                 <div class="subscribe_form">
                                     <form id="mc-form" class="mc-form footer-newsletter">
@@ -434,12 +444,17 @@ if (isset($_GET['id'])) {
             </div>
         </div>
     </footer>
+
+    <!-- shopping cart area end -->
+
+    <!--footer area start-->
+
     <!--footer area end-->
 
     <!-- JS
 ============================================ -->
 
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!--map js code here-->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdWLY_Y6FL7QGW5vcO3zajUEsrKfQPNzI"></script>
     <script src="https://www.google.com/jsapi"></script>

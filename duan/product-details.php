@@ -28,7 +28,7 @@ $sanPhamLienQuan = $db_util->getAll("SELECT * FROM sanpham WHERE danhMucID = ? A
 // Lấy sản phẩm upsell
 $upsellSanPham = $db_util->getAll("SELECT * FROM sanpham WHERE id != ? ORDER BY RAND() LIMIT 4", [$id]);
 
-
+// ======= XỬ LÝ THÊM VÀO GIỎ HÀNG =======
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
     if (empty($_SESSION["user"])) {
         header('Location: login.php');
@@ -61,6 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
     exit();
 }
 
+// ======= XÓA SẢN PHẨM KHỎI GIỎ HÀNG =======
 if (isset($_GET['delete_id']) && !empty($_SESSION['user'])) {
     $idCanXoa = intval($_GET['delete_id']);
     $nguoiDungID = $_SESSION['user']['id'];
@@ -69,6 +70,7 @@ if (isset($_GET['delete_id']) && !empty($_SESSION['user'])) {
     exit();
 }
 
+// ======= LẤY DỮ LIỆU GIỎ HÀNG =======
 $gioHang = [];
 if (!empty($_SESSION['user'])) {
     $nguoiDungID = $_SESSION['user']['id'];
@@ -391,7 +393,7 @@ if (!empty($_SESSION['user'])) {
                             </div>
                             <div class=" product_d_action">
                                 <ul>
-                                    <li><a href="dsyeuthich.php?id=<?php echo $sanPham['id'] ?>"  title="Add to wishlist"><i class="fa fa-heart-o"
+                                    <li><a href="dsyeuthich.php?id=<?= $sanPham['id'] ?>" title="Add to wishlist"><i class="fa fa-heart-o"
                                                 aria-hidden="true"></i> Thêm vào danh sách yêu thích</a></li>
                                 </ul>
                             </div>
@@ -560,15 +562,16 @@ if (!empty($_SESSION['user'])) {
                                                 <ul>
                                                     <li><a title="add to cart" href="#"><i class="fa fa-shopping-basket"
                                                                 aria-hidden="true"></i></a></li>
-                                                    <li><a href="dsyeuthich.php?id=<?php echo $sanPham['id'] ?>" title="Add to Wishlist"><i
+                                                    <li><a href="dsyeuthich.php?id=<?= $sanPham['id'] ?>" title="Add to Wishlist"><i
                                                                 class="fa fa-heart-o" aria-hidden="true"></i></a></li>
+                                                    <li><a href="compare.html" title="Add to Compare"><i
+                                                                class="fa fa-sliders" aria-hidden="true"></i></a></li>
                                                 </ul>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="quick_button">
-                                        <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">+ quick
-                                            view</a>
+                                        <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">Xem chi tiết</a>
                                     </div>
                                 </div>
                                 <div class="product_content">
@@ -618,15 +621,16 @@ if (!empty($_SESSION['user'])) {
                                                 <ul>
                                                     <li><a title="add to cart" href="#"><i class="fa fa-shopping-basket"
                                                                 aria-hidden="true"></i></a></li>
-                                                    <li><a href="dsyeuthich.php?id=<?php echo $sanPham['id'] ?>" title="Add to Wishlist"><i
+                                                    <li><a href="dsyeuthich.php?id=<?= $sanPham['id'] ?>" title="Add to Wishlist"><i
                                                                 class="fa fa-heart-o" aria-hidden="true"></i></a></li>
+                                                    <li><a href="compare.html" title="Add to Compare"><i
+                                                                class="fa fa-sliders" aria-hidden="true"></i></a></li>
                                                 </ul>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="quick_button">
-                                        <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">+ quick
-                                            view</a>
+                                        <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">Xem chi tiết</a>
                                     </div>
                                 </div>
                                 <div class="product_content">

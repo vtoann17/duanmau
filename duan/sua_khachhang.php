@@ -126,7 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <li><a href="wishlist.html">Danh mục yêu thích</a></li>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                                         <li><a href="quanly.php">Quản lý cửa hàng</a></li>
                                         <?php endif; ?>
@@ -166,41 +166,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <div class="col-lg-4">
                             <div class="cart_area">
                                 <div class="cart_link">
-                                    <a href="#"><i class="fa fa-shopping-basket"></i>2 sản phẩm</a>
+                                    <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
+                                           <?php $tongTien = 0;
+                                     foreach($gioHang as $gh):
+                                     $tongTien += $gh['thanhTien'];
+                                     $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
+                                            
                                             <div class="cart_img">
-                                                <a href="#"><img src="assets/img/s-product/product.jpg" alt=""></a>
+                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
                                             <div class="cart_info">
-                                                <a href="#">Apple iPhone SE 16GB</a>
+                                                <a href="#"><?= $gh['tensp']?></a>
 
-                                                <span>1x $60.00</span>
+                                                <span><?= $gh['soLuong']?> </span>
+                                                <span><?= number_format($gh['gia'])?>đ</span>
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="#"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
                                             </div>
-                                        </div>
-                                        <div class="cart_item bottom">
-                                            <div class="cart_img">
-                                                <a href="#"><img src="assets/img/s-product/product2.jpg" alt=""></a>
-                                            </div>
-                                            <div class="cart_info">
-                                                <a href="#">Marshall Portable Bluetooth</a>
-                                                <span> 1x $160.00</span>
-                                            </div>
-                                            <div class="cart_remove">
-                                                <a href="#"><i class="ion-android-close"></i></a>
-                                            </div>
-                                        </div>
+                                        </div><?php endforeach;?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
                                                     <tr>
-                                                        <td class="text-left">Sub-Total :</td>
-                                                        <td class="text-right">$150.00</td>
+                                                        <td class="text-left">Tổng phụ</td>
+                                                        <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
 
                                                     <tr>
@@ -276,7 +270,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 <nav>
                                     <ul>
                                         <li class="active"><a href="index.php">Trang chủ </a></li>
-                                        <li><a href="shop_category.php">Sản phẩm </a></li>
+                                        <li><a href="products.php">Sản phẩm </a></li>
                                         <li><a href="about.php">Giới thiệu</a></li>
                                         <li><a href="#">Trang <i class="fa fa-angle-down"></i></a>
                                             <ul class="sub_menu pages">
