@@ -3,77 +3,36 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $tenDanhMuc = $_POST['tenDanhMuc'];
-
-    // Thêm danh mục
-    $db_util->execute("INSERT INTO danhmuc (tenDanhMuc) VALUES (?)", [$tenDanhMuc]);
-
-    header("Location: quanly_danhmuc.php");
-    exit;
-}
+$nguoiDungID = $_SESSION['user']['id'];
+$nguoidungs = $db_util->getOne("SELECT * FROM nguoidung WHERE id = ?", [$nguoiDungID]);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Thêm sản phẩm</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fashion eCommerce HTML Template</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
-    
+
     <!-- CSS 
     ========================= -->
 
 
     <!-- Plugins CSS -->
     <link rel="stylesheet" href="assets/css/plugins.css">
-    
+
     <!-- Main Style CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
-    <style>
-        .form-container {
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 30px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        label {
-            font-weight: 500;
-            display: block;
-            margin-top: 12px;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 18px;
-            background-color: #ff6600;
-            border: none;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #ff6600;
-        }
-        .back-link {
-            display: block;
-            margin-top: 20px;
-            text-align: center;
-        }
-    </style>
+
 </head>
+
 <body>
     <header class="header_area header_three">
         <!--header top start-->
@@ -140,12 +99,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                     <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
-                                           <?php $tongTien = 0;
+                                        <?php $tongTien = 0;
                                      foreach($gioHang as $gh):
                                      $tongTien += $gh['thanhTien'];
                                      $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
-                                            
+
                                             <div class="cart_img">
                                                 <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
@@ -157,7 +116,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
                                             </div>
                                         </div><?php endforeach;?>
                                         <div class="cart__table">
@@ -262,20 +222,67 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
         <!--header bottom end-->
     </header>
-
-      <div class="form-container">
-        <h2>Thêm danh mục</h2>
-        <form method="post">
-            <label>Tên danh mục:</label>
-            <input type="text" name="tenDanhMuc" required>
-            <button type="submit">Lưu danh mục</button>
-        </form>
-        <a href="quanly_danhmuc.php" class="back-link">&larr; Quay lại quản lý</a>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div
+            style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
+            <h2 class="text-center">Menu tài khoản</h2>
+            <ul class="nav flex-column mt-4">
+                <li class="nav-item"><a href="taikhoan.php" class="nav-link text-black"><i class="fas fa-user"></i>
+                        Thông tin tài khoản</a></li>
+                <li class="nav-item"><a href="dsyeuthich.php" class="nav-link text-black"><i class="fa fa-heart-o"></i>
+                        Danh sách yêu thích</a></li>
+                <li class="nav-item"><a href="lichsudonhang.php" class="nav-link text-black"><i
+                            class="fa fa-history"></i> Lịch sử đơn hàng</a></li>
+            </ul>
+        </div>
+        <<div style="flex-grow: 1; padding: 2rem;">
+  <div style="width: 100%; max-width: 1000px; border: 1px solid #ddd; border-radius: 10px; padding: 2rem; background-color: #f9f9f9; margin: auto;">
+    <!-- Ảnh đại diện -->
+    <div style="text-align: center; margin-bottom: 30px;">
+      <img src="img/icon/pngtree-male-account-profile-worker-vector-picture-image_10398976.png" alt="Ảnh đại diện"
+        width="120" height="120"
+        style="border-radius: 50%; object-fit: cover; border: 2px solid #ccc;">
+      <h4 class="mt-3"><?= $nguoidungs['ten'] ?></h4>
     </div>
-    <!-- Plugins JS -->
-<script src="assets/js/plugins.js"></script>
 
-<!-- Main JS -->
-<script src="assets/js/main.js"></script>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Email:</label>
+        <div><?= $nguoidungs['email'] ?></div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Số điện thoại:</label>
+        <div><?= $nguoidungs['soDienThoai'] ?></div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Giới tính:</label>
+        <div>Nam</div> <!-- Sửa lại nếu có cột gioiTinh -->
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Ngày sinh:</label>
+        <div>1990-01-01</div> <!-- Thay bằng $nguoidungs['ngaySinh'] nếu có -->
+      </div>
+      <div class="col-md-12 mb-3">
+        <label class="form-label fw-bold">Địa chỉ:</label>
+        <div><?= $nguoidungs['diaChi'] ?></div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <a href="chinhsua_thongtin.php" class="btn btn-warning px-4">Chỉnh sửa thông tin</a>
+    </div>
+  </div>
+</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Plugins JS -->
+    <script src="assets/js/plugins.js"></script>
+
+    <!-- Main JS -->
+    <script src="assets/js/main.js"></script>
 </body>
+
 </html>
