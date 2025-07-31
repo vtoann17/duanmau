@@ -111,7 +111,9 @@ if($_SERVER["REQUEST_METHOD"] == 'POST'){
 
             $db->execute("UPDATE kichco SET soLuong = soLuong - ? WHERE id = ?", [$soLuong, $idSize]);
         }
-        
+         $_SESSION["thongBao"] = "Đặt hàng thành công!";
+        header("Location: dathang.php");
+        exit;
 
     }
 }
@@ -122,7 +124,7 @@ if($_SERVER["REQUEST_METHOD"] == 'POST'){
 <html lang="vi">
 
 <head>
-     <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <title>Quản lý người dùng</title>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -339,6 +341,11 @@ if($_SERVER["REQUEST_METHOD"] == 'POST'){
     </header>
     <div class="container my-5">
         <h2 class="mb-4">Thông tin đặt hàng</h2>
+        <?php if (isset($_SESSION['thongBao'])): ?>
+        <div class="alert alert-success text-center">
+            <?= $_SESSION['thongBao']; unset($_SESSION['thongBao']); ?>
+        </div>
+        <?php endif; ?>
         <form method="POST" action="">
             <!-- Thông tin khách hàng -->
             <div class="row mb-3">
@@ -417,7 +424,7 @@ if($_SERVER["REQUEST_METHOD"] == 'POST'){
             </ul>
 
             <!-- Nút đặt hàng -->
-            <button type="submit" name="dat" class="btn btn-primary w-100" >Đặt hàng</button>
+            <button type="submit" name="dat" class="btn btn-primary w-100">Đặt hàng</button>
         </form>
     </div>
     <footer class="footer_widgets">
