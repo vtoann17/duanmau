@@ -18,7 +18,16 @@ if (isset($_GET['delete'])) {
 }
 
 // Lấy danh sách mã giảm giá
-$dsMa = $db_util->getAll("SELECT * FROM magiamgia ORDER BY id DESC");
+ $dsMa = $db_util->getAll("SELECT * FROM magiamgia ORDER BY id DESC LIMIT $limit OFFSET $offset");
+ if(isset($_GET["sort"])){
+    $sort = $_GET["sort"];
+    if($sort == "asc"){
+          $dsMa = $db_util->getAll("SELECT * FROM magiamgia ORDER BY phanTramGiam ASC LIMIT $limit OFFSET $offset");
+    } elseif($sort == "desc"){
+         $dsMa = $db_util->getAll("SELECT * FROM magiamgia ORDER BY phanTramGiam DESC LIMIT $limit OFFSET $offset");
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -64,11 +73,13 @@ $dsMa = $db_util->getAll("SELECT * FROM magiamgia ORDER BY id DESC");
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                                         <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <?php endif; ?>
                                         <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php else: ?>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
                                         <?php else: ?>
                                         <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
@@ -237,7 +248,7 @@ $dsMa = $db_util->getAll("SELECT * FROM magiamgia ORDER BY id DESC");
         <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i> Dashboard</a></li>
         <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i class="fa fa-shirt"></i> Sản phẩm</a></li>
         <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i> Danh mục</a></li>
-        <li class="nav-item"><a href="orders.html" class="nav-link text-black"><i class="fa fa-box"></i> Đơn hàng</a></li>
+        <li class="nav-item"><a href="quanly_donhang.php" class="nav-link text-black"><i class="fa fa-box"></i> Đơn hàng</a></li>
         <li class="nav-item"><a href="quanly_khachhang.php" class="nav-link text-black"><i class="fa fa-users"></i> Khách hàng</a></li>
         <li class="nav-item"><a href="quanly_magiamgia.php" class="nav-link text-black"><i class="fa fa-gift"></i> Mã giảm giá</a></li>
         <li class="nav-item"><a href="reviews.html" class="nav-link text-black"><i class="fa fa-comments"></i> Đánh giá</a></li>

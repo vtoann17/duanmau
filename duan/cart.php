@@ -351,7 +351,7 @@ $gioHang = $db_util->getAll("
                                         <p class="cart_amount"><?= number_format($tongTien) ?>đ</p>
                                     </div>
                                     <div class="checkout_btn">
-                                        <a href="#">Tiến hành thanh toán</a>
+                                        <a href="dathang.php">Tiến hành thanh toán</a>
                                     </div>
                                 </div>
                             </div>

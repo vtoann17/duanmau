@@ -5,14 +5,26 @@ session_start();
   $limit =  $_GET["limit"] ?? 5;
 $page = $_GET["page"] ??  1;
 $offset = ($page -1) * $limit;
+$order_by = "sp.id DESC"; // mặc định
+
+if (isset($_GET['sort'])) {
+    switch ($_GET['sort']) {
+        case 'gia_asc': $order_by = "sp.gia ASC"; break;
+        case 'gia_desc': $order_by = "sp.gia DESC"; break;
+        case 'ten_asc': $order_by = "sp.ten ASC"; break;
+        case 'ten_desc': $order_by = "sp.ten DESC"; break;
+    }
+}
 
 $tongdong = $db_utils->getValue("SELECT COUNT(*) FROM sanpham");
 $sotrang = ceil($tongdong/$limit);
-  $dsSanPham = $db_utils->getAll("
+$dsSanPham = $db_utils->getAll("
     SELECT sp.id, sp.ten, sp.gia, sp.moTa, asp.anh
     FROM sanpham sp
     LEFT JOIN anhsanpham asp ON sp.id = asp.sanPhamID
     GROUP BY sp.id
+    ORDER BY $order_by
+    LIMIT $limit OFFSET $offset
 ");
 //   $dsSanPham = $db_utils->getAll('select * from sanpham  sp left join danhmuc dm on sp.maloai = dm.maloai');
 //  echo "<pre>";
@@ -27,22 +39,24 @@ if (isset($_GET['delete_id'])) {
     header("Location: cart.php"); // reload lại để tránh xóa lặp
     exit();
 }
-$nguoiDungID = $_SESSION['user']['id'];
-$nguoidung = $db_utils->getAll("SELECT * FROM giohang WHERE nguoiDungID = ?", [$nguoiDungID]);
-$gioHang = $db_utils->getAll("
-    SELECT 
-        gh.id,
-        gh.sanPhamID,
-        sp.ten AS tensp,
-        kc.size,
-        gh.soLuong,
-        gh.gia AS gia,
-        (gh.soLuong * gh.gia) AS thanhTien
-    FROM giohang gh
-    JOIN sanpham sp ON gh.sanPhamID = sp.id
-    JOIN kichco kc ON gh.kichCoID = kc.id
-    WHERE gh.nguoiDungID = ?
-", [$nguoiDungID]);
+if (isset($_SESSION['user'])) {
+    $nguoiDungID = $_SESSION['user']['id'];
+    $nguoidung = $db_utils->getAll("SELECT * FROM giohang WHERE nguoiDungID = ?", [$nguoiDungID]);
+    $gioHang = $db_utils->getAll("
+        SELECT 
+            gh.id,
+            gh.sanPhamID,
+            sp.ten AS tensp,
+            kc.size,
+            gh.soLuong,
+            gh.gia AS gia,
+            (gh.soLuong * gh.gia) AS thanhTien
+        FROM giohang gh
+        JOIN sanpham sp ON gh.sanPhamID = sp.id
+        JOIN kichco kc ON gh.kichCoID = kc.id
+        WHERE gh.nguoiDungID = ?
+    ", [$nguoiDungID]);
+}
 ?>
 <!doctype html>
 <html class="no-js" lang="en">
@@ -148,11 +162,13 @@ $gioHang = $db_utils->getAll("
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                                         <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <?php endif; ?>
                                         <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php else: ?>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
                                         <?php else: ?>
                                         <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
@@ -422,14 +438,14 @@ $gioHang = $db_utils->getAll("
                         </div>
 
                         <div class="niceselect_option">
-                            <form class="select_option" action="#">
-                                <select name="orderby" id="short">
-                                    <option selected value="1">Sắp xếp theo đánh giá</option>
-                                    <option value="2">Sắp xếp theo phổ biến</option>
-                                    <option value="3">Sắp xếp theo sản phẩm mới</option>
-                                    <option value="4">Giá: thấp đến cao</option>
-                                    <option value="5">Giá: cao đến thấp</option>
-                                    <option value="6">Tên sản phẩm: Z - A</option>
+                            <form class="select_option" action="" methot="get" >
+                                <select name="orderby" id="short" onchange="this.form.submit()">
+                                    <option  value="">Sắp xếp theo đánh giá</option>
+                                    <option value="desc">Sắp xếp theo phổ biến</option>
+                                    <option value="desc">Sắp xếp theo sản phẩm mới</option>
+                                    <option value="desc">Giá: thấp đến cao</option>
+                                    <option value="asc">Giá: cao đến thấp</option>
+                                    <option value="desc">Tên sản phẩm: Z - A</option>
                                 </select>
                             </form>
                         </div>
