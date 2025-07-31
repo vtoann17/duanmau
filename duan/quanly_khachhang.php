@@ -10,7 +10,15 @@ $offset = ($page -1) * $limit;
 $tongdong = $db_util->getValue("SELECT COUNT(*) FROM nguoidung");
 $sotrang = ceil($tongdong/$limit);
 
-$nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LIMIT $limit OFFSET $offset");
+ $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ten ASC LIMIT $limit OFFSET $offset");
+if(isset($_GET["sort"])){
+    $sort = $_GET["sort"];
+   if ($sort == "asc") {
+   $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ten DESC LIMIT $limit OFFSET $offset");
+} elseif ($sort == "desc") {
+       $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LIMIT $limit OFFSET $offset");
+}
+}
 ?>
 
 <!DOCTYPE html>
@@ -58,11 +66,13 @@ $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LI
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                                         <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <?php endif; ?>
                                         <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php else: ?>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
                                         <?php else: ?>
                                         <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
@@ -101,12 +111,12 @@ $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LI
                                     <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
-                                           <?php $tongTien = 0;
+                                        <?php $tongTien = 0;
                                      foreach($gioHang as $gh):
                                      $tongTien += $gh['thanhTien'];
                                      $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
-                                            
+
                                             <div class="cart_img">
                                                 <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
@@ -118,7 +128,8 @@ $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LI
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
                                             </div>
                                         </div><?php endforeach;?>
                                         <div class="cart__table">
@@ -225,20 +236,30 @@ $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LI
     </header>
     <div class="d-flex">
         <!-- Sidebar -->
-        <div style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
-      <h2 class="text-center">Admin</h2>
-      <ul class="nav flex-column mt-4">
-        <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i> Dashboard</a></li>
-        <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i class="fa fa-shirt"></i> Sản phẩm</a></li>
-        <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i> Danh mục</a></li>
-        <li class="nav-item"><a href="orders.html" class="nav-link text-black"><i class="fa fa-box"></i> Đơn hàng</a></li>
-        <li class="nav-item"><a href="quanly_khachhang.php" class="nav-link text-black"><i class="fa fa-users"></i> Khách hàng</a></li>
-        <li class="nav-item"><a href="quanly_magiamgia.php" class="nav-link text-black"><i class="fa fa-gift"></i> Mã giảm giá</a></li>
-        <li class="nav-item"><a href="reviews.html" class="nav-link text-black"><i class="fa fa-comments"></i> Đánh giá</a></li>
-        <li class="nav-item"><a href="settings.html" class="nav-link text-black"><i class="fa fa-cog"></i> Cài đặt</a></li>
-        <li class="nav-item"><a href="login.html" class="nav-link text-black"><i class="fa fa-sign-out"></i> Đăng xuất</a></li>
-      </ul>
-    </div>
+        <div
+            style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
+            <h2 class="text-center">Admin</h2>
+            <ul class="nav flex-column mt-4">
+                <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i>
+                        Dashboard</a></li>
+                <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i
+                            class="fa fa-shirt"></i> Sản phẩm</a></li>
+                <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i>
+                        Danh mục</a></li>
+                <li class="nav-item"><a href="quanly_donhang.php" class="nav-link text-black"><i class="fa fa-box"></i>
+                        Đơn hàng</a></li>
+                <li class="nav-item"><a href="quanly_khachhang.php" class="nav-link text-black"><i
+                            class="fa fa-users"></i> Khách hàng</a></li>
+                <li class="nav-item"><a href="quanly_magiamgia.php" class="nav-link text-black"><i
+                            class="fa fa-gift"></i> Mã giảm giá</a></li>
+                <li class="nav-item"><a href="reviews.html" class="nav-link text-black"><i class="fa fa-comments"></i>
+                        Đánh giá</a></li>
+                <li class="nav-item"><a href="settings.html" class="nav-link text-black"><i class="fa fa-cog"></i> Cài
+                        đặt</a></li>
+                <li class="nav-item"><a href="login.html" class="nav-link text-black"><i class="fa fa-sign-out"></i>
+                        Đăng xuất</a></li>
+            </ul>
+        </div>
 
         <!-- Nội dung chính -->
         <div class="flex-grow-1 p-4">
@@ -268,7 +289,7 @@ $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LI
                     <a href="them_khachhang.php" class="btn btn-primary">+ Thêm khách hàng</a>
                 </div>
             </form>
- <form action="" method="get">
+            <form action="" method="get">
                 <select name="limit" onchange="this.form.submit()" id="">
                     <option <?= isset($_GET["limit"]) && $_GET["limit"]==5 ? "selected":"" ?> value="5">5</option>
                     <option <?= isset($_GET["limit"]) && $_GET["limit"]==20 ? "selected":"" ?> value="20">20</option>

@@ -1,25 +1,22 @@
 <?php
 session_start();
 require_once "db_utils.php";
-$db_util = new DB_UTILS();
-if (!isset($_GET['id'])) {
-    echo "ID không hợp lệ";
+$db_utils = new DB_UTILS();
+$limit =  $_GET["limit"] ?? 5;
+$page = $_GET["page"] ??  1;
+$offset = ($page -1) * $limit;
+
+$tongdong = $db_utils->getValue("SELECT COUNT(*) FROM sanpham");
+$sotrang = ceil($tongdong/$limit);
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
     exit;
 }
-$id = $_GET['id'];
 
-// Lấy sản phẩm + tên danh mục
-$sanphams = $db_util->getAll("
-    SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
-    FROM sanpham sp
-     LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
-    WHERE sp.id = ?
-    ORDER BY sp.ngayTao DESC
-",[$id]);
-
-$images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]);
-
+$userId = $_SESSION['user']['id'];
+$dsDonHang = $db_utils->getAll("SELECT * FROM donhang WHERE nguoiDungID = ? ORDER BY ngayDat DESC", [$userId]);
 ?>
+
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -110,12 +107,12 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
                                     <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
-                                           <?php $tongTien = 0;
+                                        <?php $tongTien = 0;
                                      foreach($gioHang as $gh):
                                      $tongTien += $gh['thanhTien'];
                                      $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
-                                            
+
                                             <div class="cart_img">
                                                 <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
@@ -127,7 +124,8 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
                                             </div>
                                         </div><?php endforeach;?>
                                         <div class="cart__table">
@@ -236,138 +234,86 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
         <!-- Sidebar -->
         <div
             style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
-            <h2 class="text-center">Admin</h2>
+            <h2 class="text-center">Menu tài khoản</h2>
             <ul class="nav flex-column mt-4">
-                <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i>
-                        Dashboard</a></li>
-                <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i
-                            class="fa fa-shirt"></i> Sản phẩm</a></li>
-                <li class="nav-item"><a href="categories.html" class="nav-link text-black"><i class="fa fa-tags"></i>
-                        Danh mục</a></li>
-                <li class="nav-item"><a href="orders.html" class="nav-link text-black"><i class="fa fa-box"></i> Đơn
-                        hàng</a></li>
-                <li class="nav-item"><a href="customers.html" class="nav-link text-black"><i class="fa fa-users"></i>
-                        Khách hàng</a></li>
-                <li class="nav-item"><a href="coupons.html" class="nav-link text-black"><i class="fa fa-gift"></i> Mã
-                        giảm giá</a></li>
-                <li class="nav-item"><a href="reviews.html" class="nav-link text-black"><i class="fa fa-comments"></i>
-                        Đánh giá</a></li>
-                <li class="nav-item"><a href="settings.html" class="nav-link text-black"><i class="fa fa-cog"></i> Cài
-                        đặt</a></li>
-                <li class="nav-item"><a href="login.html" class="nav-link text-black"><i class="fa fa-sign-out"></i>
-                        Đăng xuất</a></li>
+                <li class="nav-item"><a href="taikhoan.php" class="nav-link text-black"><i class="fas fa-user"></i>
+                        Thông tin tài khoản</a></li>
+                <li class="nav-item"><a href="dsyeuthich.php" class="nav-link text-black"><i class="fa fa-heart-o"></i>
+                        Danh sách yêu thích</a></li>
+                <li class="nav-item"><a href="diachi.php" class="nav-link text-black"><i class="fa fa-map-marker"></i>
+                        Địa chỉ</a></li>
+                <li class="nav-item"><a href="donhang.php" class="nav-link text-black"><i
+                            class="fas fa-clipboard-list"></i> Đơn hàng</a></li>
+                <li class="nav-item"><a href="magiamgiauser.php" class="nav-link text-black"><i class="fa fa-gift"></i>
+                        Mã giảm giá</a></li>
+                <li class="nav-item"><a href="index.php" class="nav-link text-black"><i class="fas fa-home"></i>
+                        Trang chủ</a></li>
             </ul>
         </div>
 
         <!-- Main content -->
         <div class="p-4 flex-grow-1">
             <h1 class="nav-link text-black">Quản lý sản phẩm</h1>
-            <?php if (isset($_SESSION['message'])): ?>
-            <div
-                style="background: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border: 1px solid #c3e6cb; border-radius: 5px;">
-                <?= $_SESSION['message'] ?>
-            </div>
-            <?php unset($_SESSION['message']); ?>
-            <?php endif; ?>
-            <div class="product_details">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-5 col-md-5">
-                            <div class="product-details-tab">
-
-                                <div id="img-1" class="zoomWrapper single-zoom">
-
-                                    <?php foreach($sanphams as $sp): ?>
-                                    <img src="<?= $images['anh'] ?>" width="500" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-7 col-md-7">
-                            <div class="product_d_right">
-                                <form action="#">
-
-                                    <h1><?= $sp['ten'] ?></h1>
-                                    <div class=" product_ratting">
-                                        <ul>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li class="review"><a href="#"> 1 review </a></li>
-                                            <li class="review"><a href="#"> Write a review </a></li>
-                                        </ul>
-                                    </div>
-                                    <div class="product_price">
-                                        <span class="current_price"><?= $sp['gia'] ?></span>
-                                    </div>
-                                    <div class="product_desc">
-                                        <p> <?= $sp['moTa'] ?> </p>
-                                    </div>
-
-                                    <div class=" product_d_action">
-                                        <ul>
-                                            <li><a href="#" title="Add to wishlist"><i class="fa fa-heart-o"
-                                                        aria-hidden="true"></i> Thêm vào danh sách yêu thích</a></li>
-                                        </ul>
-                                    </div>
-                                    <?php endforeach; ?>
-                                </form>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Tìm kiếm & Sắp xếp -->
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <input type="text" class="form-control" placeholder="Tìm theo tên sản phẩm...">
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select">
-                        <option value="">Sắp xếp theo giá</option>
-                        <option value="asc">Giá tăng dần</option>
-                        <option value="desc">Giá giảm dần</option>
-                    </select>
-                </div>
-                <div class="col-md-5 text-end">
-                    <a class="btn btn-primary" href="them_sanpham.php">Thêm sản phẩm</a>
-                </div>
-            </div>
-
-            <!-- Bảng -->
+            <?php foreach ($dsDonHang as $donHang): ?>
+                 <?php 
+                       $chiTiet = $db_utils->getAll("
+    SELECT ct.*, sp.ten AS tenSP, asp.anh, kc.size AS tenSize
+    FROM chitietdonhang ct
+    JOIN kichco kc ON ct.bienTheID = kc.id
+    JOIN sanpham sp ON kc.idSanPham = sp.id
+    LEFT JOIN anhsanpham asp ON sp.id = asp.sanPhamID AND asp.anhChinh = 1
+    WHERE ct.donHangID = ?
+", [$donHang['id']]);?>
             <table class="table table-bordered">
                 <thead>
                     <tr>
+                        <th>Mã đơn</th>
+                        <th>Ảnh</th>
+                        <th>Tên</th>
                         <th>Size</th>
-                        <th>Số lượng</th>
-                        <th>Mô tả</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-        $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = ? ", [$sp['id']]);
-        ?>
-                    <?php foreach ($kichco as $kc): ?>
+                   <?php foreach ($chiTiet as $ct):?>
                     <tr>
-                        <td><?= $kc['size'] ?? 'Chưa có' ?></td>
-                        <td><?= $kc['soLuong'] ?></td>
-                        <td><?= $kc['moTa'] ?></td>
+
+                        <td>#<?= $donHang['id'] ?></td>
+                        <td><img src="<?= $ct['anh'] ?>" width="60"></td>
+                        <td><?= $ct['tenSP'] ?></td>
+                        <td><?= $ct['tenSize'] ?></td>
+                        <td><?= date('d/m/Y H:i', strtotime($donHang['ngayDat'])) ?></td>
+                        <td><?= number_format($donHang['tongTien']) ?>đ</td>
+                        <td>
+                            <?php
+                switch ($donHang['trangThai']) {
+                    case 'cho_xac_nhan': echo 'Chờ xác nhận'; break;
+                    case 'dang_xu_ly': echo 'Đang xử lý'; break;
+                    case 'dang_giao': echo 'Đang giao'; break;
+                    case 'hoan_thanh': echo 'Hoàn thành'; break;
+                    case 'da_huy': echo 'Đã hủy'; break;
+                    default: echo 'Không rõ'; break;
+                }
+                ?>
+                        </td>
                     </tr>
-                    <?php endforeach; ?>
+<?php endforeach;?>
                 </tbody>
             </table>
-
+                <?php endforeach;?>
             <!-- Phân trang -->
             <nav>
                 <ul class="pagination">
-                    <li class="page-item"><a class="page-link" href="#">Trước</a></li>
-                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Tiếp</a></li>
+                    <?php for($index=1;$index<=$sotrang;$index++){?>
+                    <li class="page-item <?= $index == $page ? "active":"" ?>">
+                        <a class="page-link"
+                            href="?<?=http_build_query(array_merge($_GET,["page"=>$index])) ?>"><?= $index ?></a>
+                    </li>
+                    <?php } ?>
                 </ul>
+
             </nav>
 
         </div>

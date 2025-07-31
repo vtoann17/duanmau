@@ -114,11 +114,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                                         <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <?php endif; ?>
                                         <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php else: ?>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
                                         <?php else: ?>
                                         <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>

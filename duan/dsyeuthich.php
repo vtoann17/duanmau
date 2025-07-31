@@ -100,11 +100,13 @@ if (isset($_GET['id'])) {
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                                         <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <?php endif; ?>
                                         <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php else: ?>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
                                         <?php else: ?>
                                         <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
@@ -271,7 +273,7 @@ if (isset($_GET['id'])) {
 
     <div class="d-flex" >
         <!-- Sidebar -->
-        <div
+         <div
             style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
             <h2 class="text-center">Menu tài khoản</h2>
             <ul class="nav flex-column mt-4">
@@ -279,8 +281,14 @@ if (isset($_GET['id'])) {
                         Thông tin tài khoản</a></li>
                 <li class="nav-item"><a href="dsyeuthich.php" class="nav-link text-black"><i class="fa fa-heart-o"></i>
                         Danh sách yêu thích</a></li>
+                <li class="nav-item"><a href="diachi.php" class="nav-link text-black"><i
+                            class="fa fa-map-marker"></i> Địa chỉ</a></li>
                 <li class="nav-item"><a href="lichsudonhang.php" class="nav-link text-black"><i
-                            class="fa fa-history"></i> Lịch sử đơn hàng</a></li>
+                            class="fas fa-clipboard-list"></i> Đơn hàng</a></li>
+                <li class="nav-item"><a href="lichsudonhang.php" class="nav-link text-black"><i class="fa fa-gift"></i>
+                        Mã giảm giá</a></li>
+                <li class="nav-item"><a href="lichsudonhang.php" class="nav-link text-black"><i class="fas fa-home"></i>
+                        Trang chủ</a></li>
             </ul>
         </div>
         <div style="flex: 1;">
@@ -445,14 +453,7 @@ if (isset($_GET['id'])) {
         </div>
     </footer>
 
-    <!-- shopping cart area end -->
-
-    <!--footer area start-->
-
-    <!--footer area end-->
-
-    <!-- JS
-============================================ -->
+   
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!--map js code here-->

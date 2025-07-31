@@ -2,6 +2,7 @@
 session_start();
   require_once "./db_utils.php";
   $db_utils = new DB_UTILS();
+
 $dsSanPham = $db_utils->getAll("
     SELECT sp.id, sp.ten, sp.gia, asp.anh
     FROM sanpham sp
@@ -134,15 +135,17 @@ if (isset($_SESSION['user'])) {
         } else {
             echo 'Tài khoản của tôi';
         }
-    ?>
+     ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
                                         <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <?php endif; ?>
                                         <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php else: ?>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
                                         <?php else: ?>
                                         <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
@@ -181,12 +184,12 @@ if (isset($_SESSION['user'])) {
                                     <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
-                                           <?php $tongTien = 0;
+                                        <?php $tongTien = 0;
                                      foreach($gioHang as $gh):
                                      $tongTien += $gh['thanhTien'];
                                      $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
-                                            
+
                                             <div class="cart_img">
                                                 <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
@@ -198,7 +201,8 @@ if (isset($_SESSION['user'])) {
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
                                             </div>
                                         </div><?php endforeach;?>
                                         <div class="cart__table">
@@ -413,14 +417,17 @@ if (isset($_SESSION['user'])) {
                                         <div class="product_thumb">
                                             <div class="wishlist_icon">
                                                 <ul>
-                                                    <li><a href="dsyeuthich.php?id=<?= $sanpham['id'] ?>" title="Thêm vào danh sách yêu thích"><i
+                                                    <li><a href="dsyeuthich.php?id=<?= $sanpham['id'] ?>"
+                                                            title="Thêm vào danh sách yêu thích"><i
                                                                 class="fa fa-heart-o" aria-hidden="true"></i></a>
                                                     </li>
                                                 </ul>
                                             </div>
-                                            <a class="primary_img" href="product-details.php?id=<?= $sanpham['id']?>"><img
+                                            <a class="primary_img"
+                                                href="product-details.php?id=<?= $sanpham['id']?>"><img
                                                     src="<?php echo $sanpham['anh']; ?>" alt=""></a>
-                                            <a class="secondary_img" href="product-details.php?id=<?= $sanpham['id']?>"><img
+                                            <a class="secondary_img"
+                                                href="product-details.php?id=<?= $sanpham['id']?>"><img
                                                     src="<?php echo $sanpham['anh']; ?>" alt=""></a>
 
                                             <div class="quick_button">
@@ -503,8 +510,9 @@ if (isset($_SESSION['user'])) {
                                 <div class="product_thumb">
                                     <div class="wishlist_icon">
                                         <ul>
-                                            <li><a href="dsyeuthich.php?id=<?= $sanpham['id'] ?>" title="Thêm vào danh sách yêu thích"><i
-                                                        class="fa fa-heart-o" aria-hidden="true"></i></a>
+                                            <li><a href="dsyeuthich.php?id=<?= $sanpham['id'] ?>"
+                                                    title="Thêm vào danh sách yêu thích"><i class="fa fa-heart-o"
+                                                        aria-hidden="true"></i></a>
                                             </li>
                                         </ul>
                                     </div>
@@ -514,7 +522,8 @@ if (isset($_SESSION['user'])) {
                                             src="<?php echo $sanpham['anh']; ?>" alt=""></a>
 
                                     <div class="quick_button">
-                                        <a href="product-details.php?id=<?= $sanpham['id'] ?>" title="Xem nhanh">Xem chi tiết</a> <br>
+                                        <a href="product-details.php?id=<?= $sanpham['id'] ?>" title="Xem nhanh">Xem chi
+                                            tiết</a> <br>
                                     </div>
 
                                     <div class="product_sale">

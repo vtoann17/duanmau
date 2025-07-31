@@ -2,24 +2,62 @@
 session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
-if (!isset($_GET['id'])) {
-    echo "ID không hợp lệ";
+
+// Lấy dữ liệu sản phẩm và danh mục
+
+$limit =  $_GET["limit"] ?? 5;
+$page = $_GET["page"] ??  1;
+$offset = ($page -1) * $limit;
+
+$tongdong = $db_util->getValue("SELECT COUNT(*) FROM sanpham");
+$sotrang = ceil($tongdong/$limit);
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id"]) && isset($_POST["trangThai"])) {
+    $db_util->execute("UPDATE donhang SET trangThai = ? WHERE id = ?", [
+        $_POST["trangThai"],
+        $_POST["id"]
+    ]);
+    $_SESSION['message'] = "Cập nhật trạng thái đơn hàng thành công.";
+    header("Location: quanly_donhang.php");
     exit;
 }
-$id = $_GET['id'];
 
-// Lấy sản phẩm + tên danh mục
-$sanphams = $db_util->getAll("
-    SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
-    FROM sanpham sp
-     LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
-    WHERE sp.id = ?
-    ORDER BY sp.ngayTao DESC
-",[$id]);
+// Lấy tất cả đơn hàng
+$donhangs = $db_util->getAll("
+    SELECT dh.*, nd.ten as tenNguoiDung, dc.chiTiet as diaChiChiTiet
+    FROM donhang dh
+    LEFT JOIN nguoidung nd ON dh.nguoiDungID = nd.id
+    LEFT JOIN diachi dc ON dh.idDc = dc.id
+    ORDER BY dh.tongTien DESC
+    LIMIT $limit OFFSET $offset
+");
 
-$images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]);
+if(isset($_GET["sort"])){
+    $sort = $_GET["sort"];
+   if ($sort == "asc") {
+    $donhangs = $db_util->getAll("
+        SELECT dh.*, nd.ten as tenNguoiDung, dc.chiTiet as diaChiChiTiet
+        FROM donhang dh
+        LEFT JOIN nguoidung nd ON dh.nguoiDungID = nd.id
+        LEFT JOIN diachi dc ON dh.idDc = dc.id
+        ORDER BY dh.tongTien ASC
+        LIMIT $limit OFFSET $offset
+    ");
+} elseif ($sort == "desc") {
+    $donhangs = $db_util->getAll("
+        SELECT dh.*, nd.ten as tenNguoiDung, dc.chiTiet as diaChiChiTiet
+        FROM donhang dh
+        LEFT JOIN nguoidung nd ON dh.nguoiDungID = nd.id
+        LEFT JOIN diachi dc ON dh.idDc = dc.id
+        ORDER BY dh.tongTien DESC
+        LIMIT $limit OFFSET $offset
+    ");
+}
+}
+
 
 ?>
+
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -110,12 +148,12 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
                                     <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
-                                           <?php $tongTien = 0;
+                                        <?php $tongTien = 0;
                                      foreach($gioHang as $gh):
                                      $tongTien += $gh['thanhTien'];
                                      $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
-                                            
+
                                             <div class="cart_img">
                                                 <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
@@ -127,7 +165,8 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
                                             </div>
                                         </div><?php endforeach;?>
                                         <div class="cart__table">
@@ -242,14 +281,14 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
                         Dashboard</a></li>
                 <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i
                             class="fa fa-shirt"></i> Sản phẩm</a></li>
-                <li class="nav-item"><a href="categories.html" class="nav-link text-black"><i class="fa fa-tags"></i>
+                <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i>
                         Danh mục</a></li>
-                <li class="nav-item"><a href="orders.html" class="nav-link text-black"><i class="fa fa-box"></i> Đơn
-                        hàng</a></li>
-                <li class="nav-item"><a href="customers.html" class="nav-link text-black"><i class="fa fa-users"></i>
-                        Khách hàng</a></li>
-                <li class="nav-item"><a href="coupons.html" class="nav-link text-black"><i class="fa fa-gift"></i> Mã
-                        giảm giá</a></li>
+                <li class="nav-item"><a href="quanly_donhang.php" class="nav-link text-black"><i class="fa fa-box"></i>
+                        Đơn hàng</a></li>
+                <li class="nav-item"><a href="quanly_khachhang.php" class="nav-link text-black"><i
+                            class="fa fa-users"></i> Khách hàng</a></li>
+                <li class="nav-item"><a href="quanly_magiamgia.php" class="nav-link text-black"><i
+                            class="fa fa-gift"></i> Mã giảm giá</a></li>
                 <li class="nav-item"><a href="reviews.html" class="nav-link text-black"><i class="fa fa-comments"></i>
                         Đánh giá</a></li>
                 <li class="nav-item"><a href="settings.html" class="nav-link text-black"><i class="fa fa-cog"></i> Cài
@@ -269,105 +308,102 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
             </div>
             <?php unset($_SESSION['message']); ?>
             <?php endif; ?>
-            <div class="product_details">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-5 col-md-5">
-                            <div class="product-details-tab">
-
-                                <div id="img-1" class="zoomWrapper single-zoom">
-
-                                    <?php foreach($sanphams as $sp): ?>
-                                    <img src="<?= $images['anh'] ?>" width="500" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-7 col-md-7">
-                            <div class="product_d_right">
-                                <form action="#">
-
-                                    <h1><?= $sp['ten'] ?></h1>
-                                    <div class=" product_ratting">
-                                        <ul>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li class="review"><a href="#"> 1 review </a></li>
-                                            <li class="review"><a href="#"> Write a review </a></li>
-                                        </ul>
-                                    </div>
-                                    <div class="product_price">
-                                        <span class="current_price"><?= $sp['gia'] ?></span>
-                                    </div>
-                                    <div class="product_desc">
-                                        <p> <?= $sp['moTa'] ?> </p>
-                                    </div>
-
-                                    <div class=" product_d_action">
-                                        <ul>
-                                            <li><a href="#" title="Add to wishlist"><i class="fa fa-heart-o"
-                                                        aria-hidden="true"></i> Thêm vào danh sách yêu thích</a></li>
-                                        </ul>
-                                    </div>
-                                    <?php endforeach; ?>
-                                </form>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- Tìm kiếm & Sắp xếp -->
-            <div class="row mb-3">
+            <div class="row mb-3 align-items-center">
                 <div class="col-md-4">
-                    <input type="text" class="form-control" placeholder="Tìm theo tên sản phẩm...">
+                    <form action="" method="get" class="d-flex">
+
+                        <input type="text" class="form-control me-2" name="search"
+                            placeholder="Tìm theo tên sản phẩm hoặc danh mục..."
+                            value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select">
-                        <option value="">Sắp xếp theo giá</option>
-                        <option value="asc">Giá tăng dần</option>
-                        <option value="desc">Giá giảm dần</option>
+                    <select name="sort" onchange="this.form.submit()" class="form-select">
+                        <option value="">Sắp xếp theo phí ship</option>
+                        <option value="asc">Phí ship tăng giần</option>
+                        <option value="desc">Phí ship giảm giần </option>
                     </select>
-                </div>
-                <div class="col-md-5 text-end">
-                    <a class="btn btn-primary" href="them_sanpham.php">Thêm sản phẩm</a>
+                    </form>
                 </div>
             </div>
 
+
             <!-- Bảng -->
+            <form action="" method="get">
+                <select name="limit" onchange="this.form.submit()" id="">
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==5 ? "selected":"" ?> value="5">5</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==20 ? "selected":"" ?> value="20">20</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==50 ? "selected":"" ?> value="50">50</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==100 ? "selected":"" ?> value="100">100</option>
+                </select>
+            </form>
+            <?php if (isset($_SESSION['message'])): ?>
+            <div class="alert alert-success"><?= $_SESSION['message']; unset($_SESSION['message']); ?></div>
+            <?php endif; ?>
+
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Size</th>
-                        <th>Số lượng</th>
-                        <th>Mô tả</th>
+                        <th>ID</th>
+                        <th>Người đặt</th>
+                        <th>Địa chỉ</th>
+                        <th>Ngày đặt</th>
+                        <th>Phương thức</th>
+                        <th>Phí ship</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Cập nhật</th>
+                        <th>Chi tiết</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-        $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = ? ", [$sp['id']]);
-        ?>
-                    <?php foreach ($kichco as $kc): ?>
+                    <?php foreach($donhangs as $dh): ?>
                     <tr>
-                        <td><?= $kc['size'] ?? 'Chưa có' ?></td>
-                        <td><?= $kc['soLuong'] ?></td>
-                        <td><?= $kc['moTa'] ?></td>
+                        <td><?= $dh['id'] ?></td>
+                        <td><?= $dh['ten'] ?> <br><small><?= $dh['sdt'] ?></small></td>
+                        <td><?= $dh['diaChiChiTiet'] ?></td>
+                        <td><?= $dh['ngayDat'] ?></td>
+                        <td><?= $dh['phuongTT'] ?></td>
+                        <td><?= number_format($dh['phiShip']) ?>đ</td>
+                        <td><?= number_format($dh['tongTien']) ?>đ</td>
+                        <td><?= ucfirst(str_replace('_', ' ', $dh['trangThai'])) ?></td>
+                        <td>
+                            <form method="post">
+                                <input type="hidden" name="id" value="<?= $dh['id'] ?>">
+                                <select name="trangThai" class="form-select form-select-sm"
+                                    onchange="this.form.submit()">
+                                    <option <?= $dh['trangThai']=='cho_xac_nhan'?'selected':'' ?> value="cho_xac_nhan">
+                                        Chờ xác nhận</option>
+                                    <option <?= $dh['trangThai']=='dang_xu_ly'?'selected':'' ?> value="dang_xu_ly">Đang
+                                        xử lý</option>
+                                    <option <?= $dh['trangThai']=='dang_giao'?'selected':'' ?> value="dang_giao">Đang
+                                        giao</option>
+                                    <option <?= $dh['trangThai']=='hoan_thanh'?'selected':'' ?> value="hoan_thanh">Hoàn
+                                        thành</option>
+                                    <option <?= $dh['trangThai']=='da_huy'?'selected':'' ?> value="da_huy">Đã huỷ
+                                    </option>
+                                </select>
+                            </form>
+                        </td>
+                        <td><a class="btn btn-sm btn-info" href="chitietdonhang.php?id=<?= $dh['id'] ?>">Xem</a></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
 
+
             <!-- Phân trang -->
             <nav>
                 <ul class="pagination">
-                    <li class="page-item"><a class="page-link" href="#">Trước</a></li>
-                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Tiếp</a></li>
+                    <?php for($index=1;$index<=$sotrang;$index++){?>
+                    <li class="page-item <?= $index == $page ? "active":"" ?>">
+                        <a class="page-link"
+                            href="?<?=http_build_query(array_merge($_GET,["page"=>$index])) ?>"><?= $index ?></a>
+                    </li>
+                    <?php } ?>
                 </ul>
+
             </nav>
 
         </div>
