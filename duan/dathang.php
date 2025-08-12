@@ -88,35 +88,53 @@ if ($idXa) {
 // exit;
 // echo "<pre>";
 
-if($_SERVER["REQUEST_METHOD"] == 'POST'){
-    if(isset($_POST['dat'])){
-        $ten = $_POST["ten"];
-        $sdt = $_POST["sdt"];
-        $diaChi = $_POST["diaChi"];
-        $phuongTT = $_POST["pttt"];
-        $db->execute("INSERT INTO donhang(ten,sdt,idDc,phuongTT,nguoiDungID,tongTien,phiShip) VALUES(?,?,?,?,?,?,?)", [$ten, $sdt, $diaChi, $phuongTT,$idNguoiDung,$tong+$phiShip,$phiShip]);
-        $idDH =  $db -> getLastInsertId();
-        foreach($cart as $c){
-            $tongCart = $c["soLuong"]*$c["gia"];
-             $db->execute("INSERT INTO chitietdonhang(donHangID, bienTheID, soLuong, gia, tong) VALUES(?,?,?,?,?)", [$idDH, $c["kichCoID"],$c["soLuong"],$c["gia"],$tongCart]);
-            $db->execute("DELETE FROM giohang WHERE id = ?", [$c["id"]]);
+$errors = [];
+
+if ($_SERVER["REQUEST_METHOD"] == 'POST') {
+    if (isset($_POST['dat'])) {
+        $ten = trim($_POST["ten"] ?? '');
+        $sdt = trim($_POST["sdt"] ?? '');
+        $diaChi = $_POST["diaChi"] ?? '';
+        $phuongTT = $_POST["pttt"] ?? '';
+        if ($ten === '') {
+            $errors['ten'] = "Vui lòng nhập tên người nhận.";
         }
 
-         $chiTiet = $db->getAll("SELECT bienTheID, soLuong FROM chitietdonhang WHERE donHangID = ?", [$idDH]);
-
-        // Cập nhật lại số lượng tồn kho cho từng idSize
-        foreach ($chiTiet as $item) {
-            $idSize = $item['bienTheID'];
-            $soLuong = $item['soLuong'];
-
-            $db->execute("UPDATE kichco SET soLuong = soLuong - ? WHERE id = ?", [$soLuong, $idSize]);
+        if ($sdt === '') {
+            $errors['sdt'] = "Vui lòng nhập số điện thoại.";
         }
-         $_SESSION["thongBao"] = "Đặt hàng thành công!";
-        header("Location: dathang.php");
-        exit;
 
+        if ($diaChi === '') {
+            $errors['diaChi'] = "Vui lòng chọn địa chỉ giao hàng.";
+        }
+
+        if ($phuongTT === '') {
+            $errors['pttt'] = "Vui lòng chọn phương thức thanh toán.";
+        }
+        if (empty($errors)) {
+            $db->execute("INSERT INTO donhang(ten,sdt,idDc,phuongTT,nguoiDungID,tongTien,phiShip) VALUES(?,?,?,?,?,?,?)", [$ten, $sdt, $diaChi, $phuongTT, $idNguoiDung, $tong + $phiShip, $phiShip]);
+            $idDH =  $db->getLastInsertId();
+
+            foreach ($cart as $c) {
+                $tongCart = $c["soLuong"] * $c["gia"];
+                $db->execute("INSERT INTO chitietdonhang(donHangID, bienTheID, soLuong, gia, tong) VALUES(?,?,?,?,?)", [$idDH, $c["kichCoID"], $c["soLuong"], $c["gia"], $tongCart]);
+                $db->execute("DELETE FROM giohang WHERE id = ?", [$c["id"]]);
+            }
+
+            $chiTiet = $db->getAll("SELECT bienTheID, soLuong FROM chitietdonhang WHERE donHangID = ?", [$idDH]);
+            foreach ($chiTiet as $item) {
+                $idSize = $item['bienTheID'];
+                $soLuong = $item['soLuong'];
+                $db->execute("UPDATE kichco SET soLuong = soLuong - ? WHERE id = ?", [$soLuong, $idSize]);
+            }
+
+            $_SESSION["thongBao"] = "Đặt hàng thành công!";
+            header("Location: dathang.php");
+            exit;
+        }
     }
 }
+
 
 ?>
 
@@ -352,11 +370,17 @@ if($_SERVER["REQUEST_METHOD"] == 'POST'){
                 <div class="col-md-6">
                     <label for="hoTen" class="form-label">Tên</label>
                     <input type="text" name="ten" class="form-control" id="ten" placeholder="Nhập tên..">
+                     <?php if (!empty($errors['ten'])): ?>
+            <div style="color: red;"><?= $errors['ten'] ?></div>
+        <?php endif; ?>
                 </div>
                 <div class="col-md-6">
                     <label for="soDienThoai" class="form-label">Số điện thoại</label>
                     <input type="tel" name="sdt" class="form-control" id="soDienThoai"
                         placeholder="Nhập số điện thoại...">
+                         <?php if (!empty($errors['sdt'])): ?>
+            <div style="color: red;"><?= $errors['sdt'] ?></div>
+        <?php endif; ?>
                 </div>
             </div>
 
@@ -378,6 +402,9 @@ if($_SERVER["REQUEST_METHOD"] == 'POST'){
                     </option>
                     <?php } ?>
                 </select>
+                 <?php if (!empty($errors['diaChi'])): ?>
+            <div style="color: red;"><?= $errors['diaChi'] ?></div>
+        <?php endif; ?>
             </div>
 
             <!-- Phương thức thanh toán -->

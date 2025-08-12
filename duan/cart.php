@@ -2,30 +2,69 @@
 session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
-$nguoiDungID = $_SESSION['user']['id'];
-if (isset($_GET['delete_id'])) {
-    $idCanXoa = intval($_GET['delete_id']);
-    // Xóa sản phẩm khỏi giỏ nếu đúng ID và thuộc về user
-    $db_util->execute("DELETE FROM giohang WHERE id = ? AND nguoiDungID = ?", [$idCanXoa, $nguoiDungID]);
-    header("Location: cart.php"); // reload lại để tránh xóa lặp
+
+if (empty($_SESSION['user'])) {
+    header("Location: login.php");
     exit();
 }
-$nguoidung = $db_util->getAll("SELECT * FROM giohang WHERE nguoiDungID = ?", [$nguoiDungID]);
+
+$nguoiDungID = $_SESSION['user']['id'];
+
+// Xóa sản phẩm khỏi giỏ
+if (isset($_GET['delete_id'])) {
+    $idCanXoa = intval($_GET['delete_id']);
+    $db_util->execute("DELETE FROM giohang WHERE id = ? AND nguoiDungID = ?", [$idCanXoa, $nguoiDungID]);
+    header("Location: cart.php");
+    exit();
+}
+
+// Cập nhật giỏ hàng
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['capnhat'])) {
+    if (!empty($_POST['soLuong']) && is_array($_POST['soLuong'])) {
+        foreach ($_POST['soLuong'] as $cartID => $qty) {
+            $qty = intval($qty);
+            if ($qty < 1) $qty = 1;
+
+            // Lấy thông tin tồn kho của sản phẩm trong giỏ
+            $item = $db_util->getOne("
+                SELECT gh.kichCoID, kc.soLuong AS tonKho
+                FROM giohang gh
+                JOIN kichco kc ON gh.kichCoID = kc.id
+                WHERE gh.id = ? AND gh.nguoiDungID = ?
+            ", [$cartID, $nguoiDungID]);
+
+            if ($item) {
+                if ($qty > $item['tonKho']) {
+                    $qty = $item['tonKho']; // Giới hạn không vượt quá tồn kho
+                }
+                $db_util->execute("UPDATE giohang SET soLuong = ? WHERE id = ?", [$qty, $cartID]);
+            }
+        }
+    }
+
+    header("Location: cart.php");
+    exit();
+}
+
+
+// Lấy dữ liệu giỏ hàng
 $gioHang = $db_util->getAll("
     SELECT 
         gh.id,
         gh.sanPhamID,
+        gh.kichCoID,
         sp.ten AS tensp,
         kc.size,
+        sp.gia AS gia,
         gh.soLuong,
-        gh.gia AS gia,
-        (gh.soLuong * gh.gia) AS thanhTien
+        (gh.soLuong * sp.gia) AS thanhTien
     FROM giohang gh
     JOIN sanpham sp ON gh.sanPhamID = sp.id
     JOIN kichco kc ON gh.kichCoID = kc.id
     WHERE gh.nguoiDungID = ?
 ", [$nguoiDungID]);
 ?>
+
 
 <!doctype html>
 <html class="no-js" lang="en">
@@ -67,23 +106,23 @@ $gioHang = $db_util->getAll("
                             <ul>
                                 <li class="top_links"><a href="#">
                                         <?php
-        if (isset($_SESSION['user'])) {
-            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
-        } else {
-            echo 'Tài khoản của tôi';
-        }
-    ?>
+                                        if (isset($_SESSION['user'])) {
+                                            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
+                                        } else {
+                                            echo 'Tài khoản của tôi';
+                                        }
+                                        ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <li><a href="wishlist.html">Danh mục yêu thích</a></li>
-                                        <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                            <li><a href="wishlist.html">Danh mục yêu thích</a></li>
+                                            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
+                                                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
 
-                                        <?php endif; ?>
-                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php endif; ?>
+                                            <li><a href="logout.php">Đăng xuất</a></li>
                                         <?php else: ?>
-                                        <li><a href="login.php">Đăng nhập</a></li>
+                                            <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
                                     </ul>
                                 </li>
@@ -271,7 +310,7 @@ $gioHang = $db_util->getAll("
     <!-- shopping cart area start -->
     <div class="shopping_cart_area">
         <div class="container">
-            <form action="#">
+            <form action="" method="post">
                 <div class="row">
                     <div class="col-12">
                         <div class="table_desc">
@@ -288,34 +327,45 @@ $gioHang = $db_util->getAll("
                                         </tr>
                                     </thead>
                                     <?php $tongTien = 0;
-                                     foreach($gioHang as $gh):
-                                     $tongTien += $gh['thanhTien'];
-                                     $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
-                                    <tbody>
-                                        <tr>
-                                            <td class="product_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
-                                                        class="fa fa-trash-o"></i></a>
-                                            </td>
-                                            <td class="product_thumb">
-                                                <a href="#"><img src="<?= $anh['anh'] ?>" alt=""
-                                                        style="width:80px;"></a>
-                                            </td>
-                                            <td class="product_name"><?= $gh['tensp'] ?> (size
-                                                <?= $gh['size'] ?>)</td>
-                                            <td class="product-price"><?= number_format($gh['gia']) ?>đ</td>
-                                            <td class="product_quantity">
-                                                <input min="1" max="100" value="<?= $gh['soLuong'] ?>" type="number"
-                                                    readonly>
-                                            </td>
-                                            <td class="product_total"><?= number_format($gh['thanhTien']) ?>đ</td>
-                                        </tr>
-                                    </tbody>
-                                    <?php endforeach;?>
+                                    foreach ($gioHang as $gh):
+                                        $tongTien += $gh['thanhTien'];
+                                        $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
+                                        <tbody>
+                                            <tr>
+                                                <td class="product_remove">
+                                                    <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                            class="fa fa-trash-o"></i></a>
+                                                </td>
+                                                <td class="product_thumb">
+                                                    <a href="#"><img src="<?= $anh['anh'] ?>" alt=""
+                                                            style="width:80px;"></a>
+                                                </td>
+                                                <td class="product_name"><?= $gh['tensp'] ?> (size
+                                                    <?= $gh['size'] ?>)</td>
+                                                <td class="product-price"><?= number_format($gh['gia']) ?>đ</td>
+                                                <td class="product_quantity">
+                                                    <?php
+                                                    $tonKho = $db_util->getOne(
+                                                        'SELECT soLuong FROM kichco WHERE id = ?',
+                                                        [$gh['kichCoID']]
+                                                    );
+                                                    $maxValue = $tonKho ? $tonKho['soLuong'] : 1; // mặc định 1 nếu không tìm thấy
+                                                    ?>
+                                                    <input
+                                                        min="1"
+                                                        max="<?= $maxValue ?>"
+                                                        name="soLuong[<?= $gh['id'] ?>]"
+                                                        value="<?= $gh['soLuong'] ?>"
+                                                        type="number">
+                                                </td>
+                                                <td class="product_total"><?= number_format($gh['thanhTien']) ?>đ</td>
+                                            </tr>
+                                        </tbody>
+                                    <?php endforeach; ?>
                                 </table>
                             </div>
                             <div class="cart_submit">
-                                <button type="submit">Cập nhật giỏ hàng</button>
+                                <button type="submit" name="capnhat" value="1">Cập nhật giỏ hàng</button>
                             </div>
                         </div>
                     </div>

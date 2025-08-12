@@ -3,6 +3,8 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
+$tbloi = '';
+
 // Lấy ID sản phẩm từ URL
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -44,21 +46,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
         echo "Vui lòng chọn size!";
         exit();
     }
-
-    $cart = $db_util->getOne("SELECT * FROM giohang WHERE nguoiDungID = ? AND sanPhamID = ? AND kichCoID = ?", [$nguoiDungID, $sanPhamID, $kichCoID]);
-
-    if (!$cart) {
-        $sp = $db_util->getOne("SELECT gia FROM sanpham WHERE id = ?", [$sanPhamID]);
-        $gia = $sp ? $sp['gia'] : 0;
-
-        $db_util->execute("INSERT INTO giohang (nguoiDungID, sanPhamID, kichCoID, soLuong, gia) VALUES (?, ?, ?, ?, ?)", [$nguoiDungID, $sanPhamID, $kichCoID, $soLuong, $gia]);
+    $kichCo = $db_util->getOne("SELECT soLuong FROM kichco WHERE id = ?", [$kichCoID]);
+    if (!$kichCo) {
+        $tbloi = "Size không tồn tại!";
+    } elseif ($soLuong > $kichCo['soLuong']) {
+        $tbloi = "Số lượng vượt quá tồn kho!";
     } else {
-        $new_quantity = $cart['soLuong'] + $soLuong;
-        $db_util->execute("UPDATE giohang SET soLuong = ? WHERE id = ?", [$new_quantity, $cart['id']]);
-    }
+        $cart = $db_util->getOne(
+            "SELECT * FROM giohang WHERE nguoiDungID = ? AND sanPhamID = ? AND kichCoID = ?",
+            [$nguoiDungID, $sanPhamID, $kichCoID]
+        );
 
-    header("Location: cart.php");
-    exit();
+        if (!$cart) {
+            $sp = $db_util->getOne("SELECT gia FROM sanpham WHERE id = ?", [$sanPhamID]);
+            $gia = $sp ? $sp['gia'] : 0;
+
+            $db_util->execute(
+                "INSERT INTO giohang (nguoiDungID, sanPhamID, kichCoID, soLuong, gia) VALUES (?, ?, ?, ?, ?)",
+                [$nguoiDungID, $sanPhamID, $kichCoID, $soLuong, $gia]
+            );
+        } else {
+            $new_quantity = $cart['soLuong'] + $soLuong;
+            if ($new_quantity > $kichCo['soLuong']) {
+                $tbloi = "Số lượng vượt quá tồn kho!";
+            } else {
+                $db_util->execute("UPDATE giohang SET soLuong = ? WHERE id = ?", [$new_quantity, $cart['id']]);
+            }
+        }
+    }
+     if (empty($tbloi)) {
+        header("Location: cart.php");
+        exit();
+    }
 }
 
 // ======= XÓA SẢN PHẨM KHỎI GIỎ HÀNG =======
@@ -90,9 +109,9 @@ if (!empty($_SESSION['user'])) {
     ", [$nguoiDungID]);
 }
 if (empty($_SESSION["user"])) {
-        header('Location: login.php');
-        exit();
-    }
+    header('Location: login.php');
+    exit();
+}
 ?>
 
 <!doctype html>
@@ -134,24 +153,24 @@ if (empty($_SESSION["user"])) {
                             <ul>
                                 <li class="top_links"><a href="#">
                                         <?php
-        if (isset($_SESSION['user'])) {
-            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
-        } else {
-            echo 'Tài khoản của tôi';
-        }
-    ?>
+                                        if (isset($_SESSION['user'])) {
+                                            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
+                                        } else {
+                                            echo 'Tài khoản của tôi';
+                                        }
+                                        ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
+                                                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                                <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php else: ?>
+                                                <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                                <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php endif; ?>
                                         <?php else: ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
-                                        <li><a href="logout.php">Đăng xuất</a></li>
-                                        <?php endif; ?>
-                                        <?php else: ?>
-                                        <li><a href="login.php">Đăng nhập</a></li>
+                                            <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
                                     </ul>
                                 </li>
@@ -165,7 +184,7 @@ if (empty($_SESSION["user"])) {
         <!--header top start-->
 
         <!-- Đổ dữ liệu vào giỏ hàng -->
-         <div class="header_middel">
+        <div class="header_middel">
             <div class="container-fluid">
                 <div class="middel_inner">
                     <div class="row align-items-center">
@@ -188,26 +207,27 @@ if (empty($_SESSION["user"])) {
                                     <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
-                                           <?php $tongTien = 0;
-                                     foreach($gioHang as $gh):
-                                     $tongTien += $gh['thanhTien'];
-                                     $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
-                                        <div class="cart_item top">
-                                            
-                                            <div class="cart_img">
-                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
-                                            </div>
-                                            <div class="cart_info">
-                                                <a href="#"><?= $gh['tensp']?></a>
+                                        <?php $tongTien = 0;
+                                        foreach ($gioHang as $gh):
+                                            $tongTien += $gh['thanhTien'];
+                                            $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
+                                            <div class="cart_item top">
 
-                                                <span><?= $gh['soLuong']?> </span>
-                                                <span><?= number_format($gh['gia'])?>đ</span>
+                                                <div class="cart_img">
+                                                    <a href="#"><img src="<?= $anh['anh'] ?>" alt=""></a>
+                                                </div>
+                                                <div class="cart_info">
+                                                    <a href="#"><?= $gh['tensp'] ?></a>
 
-                                            </div>
-                                            <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
-                                            </div>
-                                        </div><?php endforeach;?>
+                                                    <span><?= $gh['soLuong'] ?> </span>
+                                                    <span><?= number_format($gh['gia']) ?>đ</span>
+
+                                                </div>
+                                                <div class="cart_remove">
+                                                    <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                            class="ion-android-close"></i></a>
+                                                </div>
+                                            </div><?php endforeach; ?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
@@ -217,18 +237,18 @@ if (empty($_SESSION["user"])) {
                                                     </tr>
 
                                                     <tr>
-                                                        <td class="text-left">Total :</td>
-                                                        <td class="text-right">$184.00</td>
+                                                        <td class="text-left">Tộng cộng :</td>
+                                                        <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                         </div>
 
                                         <div class="cart_button view_cart">
-                                            <a href="cart.php">View Cart</a>
+                                            <a href="cart.php">Xem giỏ hàng</a>
                                         </div>
                                         <div class="cart_button checkout">
-                                            <a href="checkout.php">Checkout</a>
+                                            <a href="dathang.php">Thanh toán</a>
                                         </div>
                                     </div>
                                     <!--mini cart end-->
@@ -329,10 +349,16 @@ if (empty($_SESSION["user"])) {
     <!--breadcrumbs area end-->
 
     <!--product details start-->
-     <div class="product_details">
+    <div class="product_details">
         <div class="container">
             <div class="row">
+                <?php if (!empty($tbloi)): ?>
+                    <div style="color:red; font-weight:bold; margin-bottom:10px;">
+                        <?= htmlspecialchars($tbloi) ?>
+                    </div>
+                <?php endif; ?>
                 <div class="col-lg-5 col-md-5">
+
                     <div class="product-details-tab">
 
                         <div id="img-1" class="zoomWrapper single-zoom">
@@ -344,14 +370,14 @@ if (empty($_SESSION["user"])) {
 
                         <div class="single-zoom-thumb">
                             <ul class="s-tab-zoom owl-carousel single-product-active" id="gallery_01">
-                                <?php foreach($anhPhu as $ap):?>
-                                <li>
-                                    <a href="#" class="elevatezoom-gallery active" data-update=""
-                                        data-image="<?= $ap['anh']?>" data-zoom-image="<?= $ap['anh']?>">
-                                        <img id="zoom1" src="<?= $ap['anh'] ?>" data-zoom-image="<?= $ap['anh']; ?>"
-                                            alt="big-1">
-                                    </a>
-                                </li>
+                                <?php foreach ($anhPhu as $ap): ?>
+                                    <li>
+                                        <a href="#" class="elevatezoom-gallery active" data-update=""
+                                            data-image="<?= $ap['anh'] ?>" data-zoom-image="<?= $ap['anh'] ?>">
+                                            <img id="zoom1" src="<?= $ap['anh'] ?>" data-zoom-image="<?= $ap['anh']; ?>"
+                                                alt="big-1">
+                                        </a>
+                                    </li>
                                 <?php endforeach; ?>
                             </ul>
                         </div>
@@ -376,7 +402,7 @@ if (empty($_SESSION["user"])) {
                                 </ul>
                             </div>
                             <div class="product_price">
-                                <span class="current_price"><?php echo number_format ($sanPham['gia']); ?>đ</span>
+                                <span class="current_price"><?php echo number_format($sanPham['gia']); ?>đ</span>
                             </div>
                             <div class="product_desc">
                                 <p><?php echo $sanPham['moTa']; ?></p>
@@ -385,22 +411,24 @@ if (empty($_SESSION["user"])) {
                                 <h3>size</h3>
                                 <select class="niceselect_option" id="color1" name="kichCoID">
                                     <option value="">Chọn size</option>
-                                    <?php foreach($kichco as $kc): ?>
+                                    <?php foreach ($kichco as $kc): ?>
 
-                                    <option value="<?= $kc['id'] ?>"><?= $kc['size'] ?></option>
+                                        <option value="<?= $kc['id'] ?>" data-stock="<?= $kc['soLuong'] ?>">
+                                            <?= $kc['size'] ?></option>
 
-                                    <?php endforeach;?>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="product_variant quantity">
                                 <label>Số lượng</label>
-                                <input min="1" max="100" value="1" type="number" name="soLuong">
+                                <input id="soLuong" min="1" max="100" value="1" type="number" name="soLuong">
                                 <button class="button" type="submit">Thêm vào giỏ hàng</button>
                             </div>
                             <div class=" product_d_action">
                                 <ul>
-                                    <li><a href="dsyeuthich.php?id=<?= $sanPham['id'] ?>" title="Add to wishlist"><i class="fa fa-heart-o"
-                                                aria-hidden="true"></i> Thêm vào danh sách yêu thích</a></li>
+                                    <li><a href="dsyeuthich.php?id=<?= $sanPham['id'] ?>" title="Add to wishlist"><i
+                                                class="fa fa-heart-o" aria-hidden="true"></i> Thêm vào danh sách yêu
+                                            thích</a></li>
                                 </ul>
                             </div>
 
@@ -552,40 +580,42 @@ if (empty($_SESSION["user"])) {
                 <div class="row">
                     <div class="product_carousel product_three_column4 owl-carousel">
                         <?php foreach ($sanPhamLienQuan as $sp): ?>
-                        <div class="col-lg-3">
-                            <div class="single_product">
-                                <div class="product_thumb">
-                                    <?php
-                    $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = {$sp['id']} AND anhChinh = 1");
-                ?>
-                                    <a class="primary_img" href="product-details.php?id=<?= $sp['id'] ?>">
-                                        <img src="<?= $anh['anh'] ?>" alt="<?= $sp['ten'] ?>">
-                                    </a>
-                                    <div class="product_action">
-                                        <div class="hover_action">
-                                            <a href="#"><i class="fa fa-plus"></i></a>
-                                            <div class="action_button">
-                                                <ul>
-                                                    <li><a title="add to cart" href="#"><i class="fa fa-shopping-basket"
-                                                                aria-hidden="true"></i></a></li>
-                                                    <li><a href="dsyeuthich.php?id=<?= $sanPham['id'] ?>" title="Add to Wishlist"><i
-                                                                class="fa fa-heart-o" aria-hidden="true"></i></a></li>
-                                                    <li><a href="compare.html" title="Add to Compare"><i
-                                                                class="fa fa-sliders" aria-hidden="true"></i></a></li>
-                                                </ul>
+                            <div class="col-lg-3">
+                                <div class="single_product">
+                                    <div class="product_thumb">
+                                        <?php
+                                        $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = {$sp['id']} AND anhChinh = 1");
+                                        ?>
+                                        <a class="primary_img" href="product-details.php?id=<?= $sp['id'] ?>">
+                                            <img src="<?= $anh['anh'] ?>" alt="<?= $sp['ten'] ?>">
+                                        </a>
+                                        <div class="product_action">
+                                            <div class="hover_action">
+                                                <a href="#"><i class="fa fa-plus"></i></a>
+                                                <div class="action_button">
+                                                    <ul>
+                                                        <li><a title="add to cart" href="#"><i class="fa fa-shopping-basket"
+                                                                    aria-hidden="true"></i></a></li>
+                                                        <li><a href="dsyeuthich.php?id=<?= $sanPham['id'] ?>"
+                                                                title="Add to Wishlist"><i class="fa fa-heart-o"
+                                                                    aria-hidden="true"></i></a></li>
+                                                        <li><a href="compare.html" title="Add to Compare"><i
+                                                                    class="fa fa-sliders" aria-hidden="true"></i></a></li>
+                                                    </ul>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div class="quick_button">
+                                            <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">Xem chi
+                                                tiết</a>
+                                        </div>
                                     </div>
-                                    <div class="quick_button">
-                                        <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">Xem chi tiết</a>
+                                    <div class="product_content">
+                                        <h3><a href="product-details.php?id=<?= $sp['id'] ?>"><?= $sp['ten'] ?></a></h3>
+                                        <span class="current_price"><?= number_format($sp['gia']) ?>đ</span>
                                     </div>
-                                </div>
-                                <div class="product_content">
-                                    <h3><a href="product-details.php?id=<?= $sp['id'] ?>"><?= $sp['ten'] ?></a></h3>
-                                    <span class="current_price"><?= number_format($sp['gia']) ?>đ</span>
                                 </div>
                             </div>
-                        </div>
                         <?php endforeach; ?>
                     </div>
 
@@ -611,40 +641,42 @@ if (empty($_SESSION["user"])) {
                 <div class="row">
                     <div class="product_carousel product_three_column4 owl-carousel">
                         <?php foreach ($upsellSanPham as $sp): ?>
-                        <div class="col-lg-3">
-                            <div class="single_product">
-                                <div class="product_thumb">
-                                    <?php
-                    $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = {$sp['id']} AND anhChinh = 1");
-                ?>
-                                    <a class="primary_img" href="product-details.php?id=<?= $sp['id'] ?>">
-                                        <img src="<?= $anh['anh'] ?>" alt="<?= $sp['ten'] ?>">
-                                    </a>
-                                    <div class="product_action">
-                                        <div class="hover_action">
-                                            <a href="#"><i class="fa fa-plus"></i></a>
-                                            <div class="action_button">
-                                                <ul>
-                                                    <li><a title="add to cart" href="#"><i class="fa fa-shopping-basket"
-                                                                aria-hidden="true"></i></a></li>
-                                                    <li><a href="dsyeuthich.php?id=<?= $sanPham['id'] ?>" title="Add to Wishlist"><i
-                                                                class="fa fa-heart-o" aria-hidden="true"></i></a></li>
-                                                    <li><a href="compare.html" title="Add to Compare"><i
-                                                                class="fa fa-sliders" aria-hidden="true"></i></a></li>
-                                                </ul>
+                            <div class="col-lg-3">
+                                <div class="single_product">
+                                    <div class="product_thumb">
+                                        <?php
+                                        $anh = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = {$sp['id']} AND anhChinh = 1");
+                                        ?>
+                                        <a class="primary_img" href="product-details.php?id=<?= $sp['id'] ?>">
+                                            <img src="<?= $anh['anh'] ?>" alt="<?= $sp['ten'] ?>">
+                                        </a>
+                                        <div class="product_action">
+                                            <div class="hover_action">
+                                                <a href="#"><i class="fa fa-plus"></i></a>
+                                                <div class="action_button">
+                                                    <ul>
+                                                        <li><a title="add to cart" href="#"><i class="fa fa-shopping-basket"
+                                                                    aria-hidden="true"></i></a></li>
+                                                        <li><a href="dsyeuthich.php?id=<?= $sanPham['id'] ?>"
+                                                                title="Add to Wishlist"><i class="fa fa-heart-o"
+                                                                    aria-hidden="true"></i></a></li>
+                                                        <li><a href="compare.html" title="Add to Compare"><i
+                                                                    class="fa fa-sliders" aria-hidden="true"></i></a></li>
+                                                    </ul>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div class="quick_button">
+                                            <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">Xem chi
+                                                tiết</a>
+                                        </div>
                                     </div>
-                                    <div class="quick_button">
-                                        <a href="product-details.php?id=<?= $sp['id'] ?>" title="Xem nhanh">Xem chi tiết</a>
+                                    <div class="product_content">
+                                        <h3><a href="product-details.php?id=<?= $sp['id'] ?>"><?= $sp['ten'] ?></a></h3>
+                                        <span class="current_price"><?= number_format($sp['gia']) ?>đ</span>
                                     </div>
-                                </div>
-                                <div class="product_content">
-                                    <h3><a href="product-details.php?id=<?= $sp['id'] ?>"><?= $sp['ten'] ?></a></h3>
-                                    <span class="current_price"><?= number_format($sp['gia']) ?>đ</span>
                                 </div>
                             </div>
-                        </div>
                         <?php endforeach; ?>
                     </div>
 
@@ -755,143 +787,16 @@ if (empty($_SESSION["user"])) {
         </div>
     </footer>
     <!--footer area end-->
-
-    <!-- modal area start-->
-    <div class="modal fade" id="modal_box" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <div class="modal_body">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-5 col-md-5 col-sm-12">
-                                <div class="modal_tab">
-                                    <div class="tab-content product-details-large">
-                                        <div class="tab-pane fade show active" id="tab1" role="tabpanel">
-                                            <div class="modal_tab_img">
-                                                <a href="#"><img src="assets/img/product/product4.jpg" alt=""></a>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="tab2" role="tabpanel">
-                                            <div class="modal_tab_img">
-                                                <a href="#"><img src="assets/img/product/product6.jpg" alt=""></a>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="tab3" role="tabpanel">
-                                            <div class="modal_tab_img">
-                                                <a href="#"><img src="assets/img/product/product8.jpg" alt=""></a>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="tab4" role="tabpanel">
-                                            <div class="modal_tab_img">
-                                                <a href="#"><img src="assets/img/product/product2.jpg" alt=""></a>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="tab5" role="tabpanel">
-                                            <div class="modal_tab_img">
-                                                <a href="#"><img src="assets/img/product/product12.jpg" alt=""></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal_tab_button">
-                                        <ul class="nav product_navactive owl-carousel" role="tablist">
-                                            <li>
-                                                <a class="nav-link active" data-toggle="tab" href="#tab1" role="tab"
-                                                    aria-controls="tab1" aria-selected="false"><img
-                                                        src="assets/img/s-product/product3.jpg" alt=""></a>
-                                            </li>
-                                            <li>
-                                                <a class="nav-link" data-toggle="tab" href="#tab2" role="tab"
-                                                    aria-controls="tab2" aria-selected="false"><img
-                                                        src="assets/img/s-product/product.jpg" alt=""></a>
-                                            </li>
-                                            <li>
-                                                <a class="nav-link button_three" data-toggle="tab" href="#tab3"
-                                                    role="tab" aria-controls="tab3" aria-selected="false"><img
-                                                        src="assets/img/s-product/product2.jpg" alt=""></a>
-                                            </li>
-                                            <li>
-                                                <a class="nav-link" data-toggle="tab" href="#tab4" role="tab"
-                                                    aria-controls="tab4" aria-selected="false"><img
-                                                        src="assets/img/s-product/product4.jpg" alt=""></a>
-                                            </li>
-                                            <li>
-                                                <a class="nav-link" data-toggle="tab" href="#tab5" role="tab"
-                                                    aria-controls="tab5" aria-selected="false"><img
-                                                        src="assets/img/s-product/product5.jpg" alt=""></a>
-                                            </li>
-
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-7 col-md-7 col-sm-12">
-                                <div class="modal_right">
-                                    <div class="modal_title mb-10">
-                                        <h2>Handbag feugiat</h2>
-                                    </div>
-                                    <div class="modal_price mb-10">
-                                        <span class="new_price">$64.99</span>
-                                        <span class="old_price">$78.99</span>
-                                    </div>
-                                    <div class="modal_description mb-15">
-                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia iste
-                                            laborum ad impedit pariatur esse optio tempora sint ullam autem deleniti nam
-                                            in quos qui nemo ipsum numquam, reiciendis maiores quidem aperiam, rerum vel
-                                            recusandae </p>
-                                    </div>
-                                    <div class="variants_selects">
-                                        <div class="variants_size">
-                                            <h2>size</h2>
-                                            <select class="select_option">
-                                                <option selected value="1">s</option>
-                                                <option value="1">m</option>
-                                                <option value="1">l</option>
-                                                <option value="1">xl</option>
-                                                <option value="1">xxl</option>
-                                            </select>
-                                        </div>
-                                        <div class="variants_color">
-                                            <h2>color</h2>
-                                            <select class="select_option">
-                                                <option selected value="1">purple</option>
-                                                <option value="1">violet</option>
-                                                <option value="1">black</option>
-                                                <option value="1">pink</option>
-                                                <option value="1">orange</option>
-                                            </select>
-                                        </div>
-                                        <div class="modal_add_to_cart">
-                                            <form action="#">
-                                                <input min="0" max="100" step="2" value="1" type="number">
-                                                <button type="submit">add to cart</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    <div class="modal_social">
-                                        <h2>Share this product</h2>
-                                        <ul>
-                                            <li class="facebook"><a href="#"><i class="fa fa-facebook"></i></a></li>
-                                            <li class="twitter"><a href="#"><i class="fa fa-twitter"></i></a></li>
-                                            <li class="pinterest"><a href="#"><i class="fa fa-pinterest"></i></a></li>
-                                            <li class="google-plus"><a href="#"><i class="fa fa-google-plus"></i></a>
-                                            </li>
-                                            <li class="linkedin"><a href="#"><i class="fa fa-linkedin"></i></a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- modal area start-->
 
-
+    <script>
+        document.getElementById('color1').addEventListener('change', function() {
+            let stock = this.options[this.selectedIndex].getAttribute('data-stock');
+            let qtyInput = document.getElementById('soLuong');
+            qtyInput.max = stock || 1;
+            qtyInput.value = 1;
+        });
+    </script>
     <!-- JS
 ============================================ -->
 
