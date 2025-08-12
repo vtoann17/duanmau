@@ -63,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Main Style CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
-    <style>body {
+    <style>
+    body {
         background-color: #f8f9fa;
         padding: 20px;
     }
@@ -209,23 +210,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <table>
                                                 <tbody>
                                                     <tr>
-                                                        <td class="text-left">Tổng phụ</td>
+                                                        <td class="text-left">Tổng phụ:</td>
                                                         <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
 
                                                     <tr>
-                                                        <td class="text-left">Total :</td>
-                                                        <td class="text-right">$184.00</td>
+                                                        <td class="text-left">Tổng cộng :</td>
+                                                       <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                         </div>
 
                                         <div class="cart_button view_cart">
-                                            <a href="cart.php">View Cart</a>
+                                            <a href="cart.php">Giỏ hàng</a>
                                         </div>
                                         <div class="cart_button checkout">
-                                            <a href="checkout.php">Checkout</a>
+                                            <a href="dathang.php">Thanh toán</a>
                                         </div>
                                     </div>
                                     <!--mini cart end-->
