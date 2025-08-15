@@ -3,7 +3,6 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-// Lấy danh mục, size, màu
 $dsDanhMuc = $db_util->getAll("SELECT id, tenDanhMuc FROM danhmuc");
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -13,11 +12,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $gia = $_POST['price'];
     $tonKhoData = $_POST['stock'] ?? [];
 
-    // Thêm sản phẩm
     $db_util->execute("INSERT INTO sanpham (ten, moTa, gia, danhMucID) VALUES (?, ?, ?, ?)", [$ten, $moTa, $gia, $danhMucID]);
     $sanPhamID = $db_util->getLastInsertId();
 
-    // Upload ảnh
     $upload_dir = 'uploads/';
     if (!file_exists($upload_dir)) mkdir($upload_dir, 0755, true);
 

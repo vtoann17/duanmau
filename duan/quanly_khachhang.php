@@ -5,19 +5,19 @@ $db_util = new DB_UTILS();
 
 $limit =  $_GET["limit"] ?? 5;
 $page = $_GET["page"] ??  1;
-$offset = ($page -1) * $limit;
+$offset = ($page - 1) * $limit;
 
 $tongdong = $db_util->getValue("SELECT COUNT(*) FROM nguoidung");
-$sotrang = ceil($tongdong/$limit);
+$sotrang = ceil($tongdong / $limit);
 
- $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ten ASC LIMIT $limit OFFSET $offset");
-if(isset($_GET["sort"])){
+$nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LIMIT $limit OFFSET $offset");
+if (isset($_GET["sort"])) {
     $sort = $_GET["sort"];
-   if ($sort == "asc") {
-   $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ten DESC LIMIT $limit OFFSET $offset");
-} elseif ($sort == "desc") {
-       $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LIMIT $limit OFFSET $offset");
-}
+    if ($sort == "asc") {
+        $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ten DESC LIMIT $limit OFFSET $offset");
+    } elseif ($sort == "desc") {
+        $nguoiDungs = $db_util->getAll("SELECT * FROM nguoidung ORDER BY ngayTao DESC LIMIT $limit OFFSET $offset");
+    }
 }
 ?>
 
@@ -26,7 +26,7 @@ if(isset($_GET["sort"])){
 
 <head>
     <meta charset="UTF-8" />
-    <title>Quản lý sản phẩm</title>
+    <title>Quản lý khách hàng</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -57,24 +57,24 @@ if(isset($_GET["sort"])){
                             <ul>
                                 <li class="top_links"><a href="#">
                                         <?php
-        if (isset($_SESSION['user'])) {
-            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
-        } else {
-            echo 'Tài khoản của tôi';
-        }
-     ?>
+                                        if (isset($_SESSION['user'])) {
+                                            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
+                                        } else {
+                                            echo 'Tài khoản của tôi';
+                                        }
+                                        ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
+                                                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                                <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php else: ?>
+                                                <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                                <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php endif; ?>
                                         <?php else: ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
-                                        <li><a href="logout.php">Đăng xuất</a></li>
-                                        <?php endif; ?>
-                                        <?php else: ?>
-                                        <li><a href="login.php">Đăng nhập</a></li>
+                                            <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
                                     </ul>
                                 </li>
@@ -112,26 +112,26 @@ if(isset($_GET["sort"])){
                                     <!--mini cart-->
                                     <div class="mini_cart">
                                         <?php $tongTien = 0;
-                                     foreach($gioHang as $gh):
-                                     $tongTien += $gh['thanhTien'];
-                                     $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
-                                        <div class="cart_item top">
+                                        foreach ($gioHang as $gh):
+                                            $tongTien += $gh['thanhTien'];
+                                            $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
+                                            <div class="cart_item top">
 
-                                            <div class="cart_img">
-                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
-                                            </div>
-                                            <div class="cart_info">
-                                                <a href="#"><?= $gh['tensp']?></a>
+                                                <div class="cart_img">
+                                                    <a href="#"><img src="<?= $anh['anh'] ?>" alt=""></a>
+                                                </div>
+                                                <div class="cart_info">
+                                                    <a href="#"><?= $gh['tensp'] ?></a>
 
-                                                <span><?= $gh['soLuong']?> </span>
-                                                <span><?= number_format($gh['gia'])?>đ</span>
+                                                    <span><?= $gh['soLuong'] ?> </span>
+                                                    <span><?= number_format($gh['gia']) ?>đ</span>
 
-                                            </div>
-                                            <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
-                                                        class="ion-android-close"></i></a>
-                                            </div>
-                                        </div><?php endforeach;?>
+                                                </div>
+                                                <div class="cart_remove">
+                                                    <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                            class="ion-android-close"></i></a>
+                                                </div>
+                                            </div><?php endforeach; ?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
@@ -142,7 +142,7 @@ if(isset($_GET["sort"])){
 
                                                     <tr>
                                                         <td class="text-left">Tổng cộng :</td>
-                                                       <td class="text-right"><?= number_format($tongTien) ?>đ</td>
+                                                        <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -237,19 +237,19 @@ if(isset($_GET["sort"])){
     <div class="d-flex">
         <!-- Sidebar -->
         <div style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
-      <h2 class="text-center">Admin</h2>
-      <ul class="nav flex-column mt-4">
-        <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i> Thống kê</a></li>
-        <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i class="fa fa-shirt"></i> Sản phẩm</a></li>
-        <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i> Danh mục</a></li>
-        <li class="nav-item"><a href="quanly_donhang.php" class="nav-link text-black"><i class="fa fa-box"></i> Đơn hàng</a></li>
-        <li class="nav-item"><a href="quanly_khachhang.php" class="nav-link text-black"><i class="fa fa-users"></i> Khách hàng</a></li>
-        <li class="nav-item"><a href="quanly_magiamgia.php" class="nav-link text-black"><i class="fa fa-gift"></i> Mã giảm giá</a></li>
-        <li class="nav-item"><a href="reviews.html" class="nav-link text-black"><i class="fa fa-comments"></i> Đánh giá</a></li>
-        <li class="nav-item"><a href="settings.html" class="nav-link text-black"><i class="fa fa-cog"></i> Cài đặt</a></li>
-        <li class="nav-item"><a href="login.html" class="nav-link text-black"><i class="fa fa-sign-out"></i> Đăng xuất</a></li>
-      </ul>
-    </div>
+            <h2 class="text-center">Admin</h2>
+            <ul class="nav flex-column mt-4">
+                <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i> Thống kê</a></li>
+                <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i class="fa fa-shirt"></i> Sản phẩm</a></li>
+                <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i> Danh mục</a></li>
+                <li class="nav-item"><a href="quanly_donhang.php" class="nav-link text-black"><i class="fa fa-box"></i> Đơn hàng</a></li>
+                <li class="nav-item"><a href="quanly_khachhang.php" class="nav-link text-black"><i class="fa fa-users"></i> Khách hàng</a></li>
+                <li class="nav-item"><a href="quanly_magiamgia.php" class="nav-link text-black"><i class="fa fa-gift"></i> Mã giảm giá</a></li>
+                <li class="nav-item"><a href="reviews.html" class="nav-link text-black"><i class="fa fa-comments"></i> Đánh giá</a></li>
+                <li class="nav-item"><a href="settings.html" class="nav-link text-black"><i class="fa fa-cog"></i> Cài đặt</a></li>
+                <li class="nav-item"><a href="login.html" class="nav-link text-black"><i class="fa fa-sign-out"></i> Đăng xuất</a></li>
+            </ul>
+        </div>
 
         <!-- Nội dung chính -->
         <div class="flex-grow-1 p-4">
@@ -257,8 +257,9 @@ if(isset($_GET["sort"])){
 
             <!-- Thông báo -->
             <?php if (isset($_SESSION['message'])): ?>
-            <div class="alert alert-success"><?= $_SESSION['message'] ?></div>
-            <?php unset($_SESSION['message']); endif; ?>
+                <div class="alert alert-success"><?= $_SESSION['message'] ?></div>
+            <?php unset($_SESSION['message']);
+            endif; ?>
 
             <!-- Thanh tìm kiếm + sắp xếp -->
             <form class="row mb-3 g-2" method="get">
@@ -281,10 +282,10 @@ if(isset($_GET["sort"])){
             </form>
             <form action="" method="get">
                 <select name="limit" onchange="this.form.submit()" id="">
-                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==5 ? "selected":"" ?> value="5">5</option>
-                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==20 ? "selected":"" ?> value="20">20</option>
-                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==50 ? "selected":"" ?> value="50">50</option>
-                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==100 ? "selected":"" ?> value="100">100</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"] == 5 ? "selected" : "" ?> value="5">5</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"] == 20 ? "selected" : "" ?> value="20">20</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"] == 50 ? "selected" : "" ?> value="50">50</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"] == 100 ? "selected" : "" ?> value="100">100</option>
                 </select>
             </form>
             <!-- Bảng -->
@@ -303,20 +304,20 @@ if(isset($_GET["sort"])){
                 </thead>
                 <tbody>
                     <?php foreach ($nguoiDungs as $user): ?>
-                    <tr>
-                        <td><?= $user['id'] ?></td>
-                        <td><?= $user['ten'] ?></td>
-                        <td><?= $user['email'] ?></td>
-                        <td><?= $user['soDienThoai'] ?></td>
-                        <td><?= $user['diaChi'] ?></td>
-                        <td><?= $user['vaiTro'] ?></td>
-                        <td><?= $user['ngayTao'] ?></td>
-                        <td>
-                            <a href="sua_khachhang.php?id=<?= $user['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
-                            <a href="xoa_khachhang.php?id=<?= $user['id'] ?>" class="btn btn-sm btn-danger"
-                                onclick="return confirm('Xác nhận xóa?')">Xóa</a>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td><?= $user['id'] ?></td>
+                            <td><?= $user['ten'] ?></td>
+                            <td><?= $user['email'] ?></td>
+                            <td><?= $user['soDienThoai'] ?></td>
+                            <td><?= $user['diaChi'] ?></td>
+                            <td><?= $user['vaiTro'] ?></td>
+                            <td><?= $user['ngayTao'] ?></td>
+                            <td>
+                                <a href="sua_khachhang.php?id=<?= $user['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
+                                <a href="xoa_khachhang.php?id=<?= $user['id'] ?>" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Xác nhận xóa?')">Xóa</a>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
@@ -324,12 +325,12 @@ if(isset($_GET["sort"])){
             <!-- Phân trang -->
             <nav>
                 <ul class="pagination">
-                    <?php for($i = 1; $i <= $sotrang; $i++): ?>
-                    <li class="page-item <?= ($page == $i ? 'active' : '') ?>">
-                        <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>">
-                            <?= $i ?>
-                        </a>
-                    </li>
+                    <?php for ($i = 1; $i <= $sotrang; $i++): ?>
+                        <li class="page-item <?= ($page == $i ? 'active' : '') ?>">
+                            <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>">
+                                <?= $i ?>
+                            </a>
+                        </li>
                     <?php endfor; ?>
                 </ul>
             </nav>

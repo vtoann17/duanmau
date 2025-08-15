@@ -3,7 +3,6 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-// Lấy danh sách danh mục
 $danhmucs = $db_util->getAll("SELECT * FROM danhmuc");
 
 $sanpham = null;
@@ -13,7 +12,7 @@ if (isset($_GET['id'])) {
     $anhs = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]);
 }
 
-// Khi submit
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id = $_POST['id'] ?? null;
     $ten = $_POST['name'];
@@ -22,31 +21,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $danhMucID = $_POST['category_id'];
 
     if ($id) {
-        // Cập nhật sản phẩm
         $sql = "UPDATE sanpham SET ten=?, moTa=?, gia=?, danhMucID=? WHERE id=?";
         $db_util->execute($sql, [$ten, $moTa, $gia, $danhMucID, $id]);
     } else {
-        // Thêm mới
         $sql = "INSERT INTO sanpham (ten, moTa, gia, danhMucID) VALUES (?, ?, ?, ?)";
         $db_util->execute($sql, [$ten, $moTa, $gia, $danhMucID]);
         $id = $db_util->getLastInsertId();
     }
 
-    // Cập nhật ảnh nếu có
     $upload_dir = 'uploads/';
     if (!file_exists($upload_dir)) mkdir($upload_dir, 0755, true);
 
-    // Xóa ảnh cũ
     $db_util->execute("DELETE FROM anhsanpham WHERE sanPhamID = ?", [$id]);
 
-    // Ảnh chính (image[])
     if (!empty($_FILES['image']['name'][0])) {
         foreach ($_FILES['image']['tmp_name'] as $index => $tmpName) {
             $fileName = basename($_FILES['image']['name'][$index]);
             $targetPath = $upload_dir . time() . '_' . $fileName;
 
             if (move_uploaded_file($tmpName, $targetPath)) {
-                $isMain = ($index === 0) ? 1 : 0; // Ảnh đầu tiên làm ảnh chính
+                $isMain = ($index === 0) ? 1 : 0;
                 $db_util->execute(
                     "INSERT INTO anhsanpham (sanPhamID, anh, anhChinh) VALUES (?, ?, ?)",
                     [$id, $targetPath, $isMain]
@@ -55,7 +49,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
-    // Ảnh phụ (anh[])
     if (!empty($_FILES['anh']['name'][0])) {
         foreach ($_FILES['anh']['tmp_name'] as $index => $tmpName) {
             $fileName = basename($_FILES['anh']['name'][$index]);

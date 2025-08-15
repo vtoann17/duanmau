@@ -1,11 +1,10 @@
 <?php
-// Đăng ký
 session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-$login_error = [];
-$register_error = [];
+$login_errors = [];
+$register_errors = [];
 $register_success = "";
 
 if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['register'])) {
@@ -37,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['register'])) {
 
     if (empty($sdt)) {
         $register_errors['sdt'] = "Vui lòng nhập số điện thoại.";
-    } elseif (!ctype_digit($sdt) || strlen($sdt) < 10 || strlen($sdt) > 11) {
+    } elseif (strlen($sdt) < 10 || strlen($sdt) > 11) {
         $register_errors['sdt'] = "Số điện thoại phải gồm 10-11 chữ số.";
     }
 
@@ -95,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['login'])) {
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Login page</title>
+    <title>Đăng kí & đăng nhập</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Favicon -->
@@ -368,7 +367,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST['login'])) {
                     <div class="account_form register">
                         <h2>Đăng kí</h2>
                         <form action="" method="post"  class="register">
-    <?php if (!empty($register_error)) echo "<p style='color:red;'>$register_error</p>"; ?>
+    <?php if (!empty($register_error)) echo "<p style='color:red;'>$register_errors</p>"; ?>
     <?php if (!empty($register_success)) echo "<p style='color:green;'>$register_success</p>"; ?>
 
    <p>

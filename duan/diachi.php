@@ -73,10 +73,8 @@ $dsDiaChi = $db->getAll("
 
 <head>
     <meta charset="UTF-8">
-    <title>Quản lý người dùng</title>
-    <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Fashion eCommerce HTML Template</title>
+    <title>Địa chỉ</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">

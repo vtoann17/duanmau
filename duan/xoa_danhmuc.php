@@ -6,10 +6,30 @@ $db = new Database();
 $connect = $db->getConnection();
 
 if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET['id'])) {
-    $danhMucID = intval($_GET['id']);
+    $maDanhMuc = intval($_GET['id']);
+    $laySP = $connect->prepare("SELECT id FROM sanpham WHERE danhMucID = :dmID");
+    $laySP->bindParam(':dmID', $maDanhMuc, PDO::PARAM_INT);
+    $laySP->execute();
+    $danhSachSP = $laySP->fetchAll(PDO::FETCH_COLUMN);
 
+    foreach ($danhSachSP as $maSP) {
+        $connect->prepare("DELETE FROM anhsanpham WHERE sanPhamID = :id")
+                ->execute([':id' => $maSP]);
+
+        $connect->prepare("DELETE FROM kichco WHERE idSanPham = :id")
+                ->execute([':id' => $maSP]);
+
+        $connect->prepare("DELETE FROM giohang WHERE sanPhamID = :id")
+                ->execute([':id' => $maSP]);
+
+        $connect->prepare("DELETE FROM dsyeuthich WHERE sanPhamID = :id")
+                ->execute([':id' => $maSP]);
+
+        $connect->prepare("DELETE FROM sanpham WHERE id = :id")
+                ->execute([':id' => $maSP]);
+    }
     $stmt = $connect->prepare("DELETE FROM danhmuc WHERE id = :id");
-    $stmt->bindParam(':id', $danhMucID, PDO::PARAM_INT);
+    $stmt->bindParam(':id', $maDanhMuc, PDO::PARAM_INT);
 
     if ($stmt->execute()) {
         $_SESSION['message'] = "Đã xóa danh mục thành công!";

@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <head>
     <meta charset="UTF-8">
-    <title>Thêm sản phẩm</title>
+    <title>Thêm danh mục</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
 
