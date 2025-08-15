@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gioiTinh = $_POST['gioitinh'];
     $ngaySinh = $_POST['ngaySinh'];
 
-    // Upload avatar nếu có
     $avatar = $nguoidungs['avatar'];
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == 0) {
         $uploadDir = 'uploads/avatars/';
@@ -26,12 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Cập nhật dữ liệu vào bảng nguoidung
     $sql = "UPDATE nguoidung SET ten = ?, email = ?, soDienThoai = ?, gioiTinh = ?, ngaySinh = ?, avatar = ? WHERE id = ?";
     $params = [$ten, $email, $sdt, $gioiTinh, $ngaySinh, $avatar, $nguoiDungID];
     $db_util->execute($sql, $params);
 
-    // Reload lại dữ liệu sau khi lưu
     $nguoidungs = $db_util->getOne("SELECT * FROM nguoidung WHERE id = ?", [$nguoiDungID]);
 
     echo "<script>alert('Cập nhật thành công!');</script>";

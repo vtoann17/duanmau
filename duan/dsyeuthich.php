@@ -28,11 +28,9 @@ if (!isset($_SESSION['user'])) {
 
 $nguoiDungID = $_SESSION['user']['id'];
 
-// Thêm vào danh sách yêu thích
 if (isset($_GET['id'])) {
     $sanPhamID = intval($_GET['id']);
     if ($sanPhamID > 0) {
-        // Kiểm tra sản phẩm đã tồn tại trong danh sách yêu thích chưa
         $sql = "SELECT * FROM dsyeuthich WHERE nguoiDungID = ? AND sanPhamID = ?";
         $exists = $db_util->getOne($sql, [$nguoiDungID, $sanPhamID]);
 
@@ -40,7 +38,6 @@ if (isset($_GET['id'])) {
             $insert = "INSERT INTO dsyeuthich (nguoiDungID, sanPhamID) VALUES (?, ?)";
             $db_util->execute($insert, [$nguoiDungID, $sanPhamID]);
         }
-        // Sau khi thêm xong quay lại trang chủ hoặc giữ nguyên
         header("Location: dsyeuthich.php");
         exit;
     }

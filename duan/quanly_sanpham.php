@@ -3,14 +3,12 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-// Lấy dữ liệu sản phẩm và danh mục
-
 $limit =  $_GET["limit"] ?? 5;
 $page = $_GET["page"] ??  1;
-$offset = ($page -1) * $limit;
+$offset = ($page - 1) * $limit;
 
 $tongdong = $db_util->getValue("SELECT COUNT(*) FROM sanpham");
-$sotrang = ceil($tongdong/$limit);
+$sotrang = ceil($tongdong / $limit);
 
 $sanphams = $db_util->getAll("
     SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
@@ -20,9 +18,9 @@ $sanphams = $db_util->getAll("
     LIMIT $limit OFFSET $offset
 ");
 
-if(isset($_GET["sort"])){
+if (isset($_GET["sort"])) {
     $sort = $_GET["sort"];
-    if($sort=="asc"){
+    if ($sort == "asc") {
         $sanphams = $db_util->getAll("
         SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
         FROM sanpham sp
@@ -30,8 +28,8 @@ if(isset($_GET["sort"])){
         ORDER BY sp.gia ASC
         LIMIT $limit OFFSET $offset
     ");
-    }else{
-          $sanphams = $db_util->getAll("
+    } else {
+        $sanphams = $db_util->getAll("
         SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
         FROM sanpham sp
         LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
@@ -41,7 +39,6 @@ if(isset($_GET["sort"])){
     }
 }
 
-//tìm kiếm
 $search = $_GET['search'] ?? '';
 $timkiem = "
     SELECT sp.id, sp.ten, sp.gia, sp.moTa, dm.tenDanhMuc AS category_name
@@ -88,24 +85,24 @@ $timkiem = "
                             <ul>
                                 <li class="top_links"><a href="#">
                                         <?php
-        if (isset($_SESSION['user'])) {
-            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
-        } else {
-            echo 'Tài khoản của tôi';
-        }
-     ?>
+                                        if (isset($_SESSION['user'])) {
+                                            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
+                                        } else {
+                                            echo 'Tài khoản của tôi';
+                                        }
+                                        ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
+                                                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                                <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php else: ?>
+                                                <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                                <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php endif; ?>
                                         <?php else: ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
-                                        <li><a href="logout.php">Đăng xuất</a></li>
-                                        <?php endif; ?>
-                                        <?php else: ?>
-                                        <li><a href="login.php">Đăng nhập</a></li>
+                                            <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
                                     </ul>
                                 </li>
@@ -143,26 +140,26 @@ $timkiem = "
                                     <!--mini cart-->
                                     <div class="mini_cart">
                                         <?php $tongTien = 0;
-                                     foreach($gioHang as $gh):
-                                     $tongTien += $gh['thanhTien'];
-                                     $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
-                                        <div class="cart_item top">
+                                        foreach ($gioHang as $gh):
+                                            $tongTien += $gh['thanhTien'];
+                                            $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
+                                            <div class="cart_item top">
 
-                                            <div class="cart_img">
-                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
-                                            </div>
-                                            <div class="cart_info">
-                                                <a href="#"><?= $gh['tensp']?></a>
+                                                <div class="cart_img">
+                                                    <a href="#"><img src="<?= $anh['anh'] ?>" alt=""></a>
+                                                </div>
+                                                <div class="cart_info">
+                                                    <a href="#"><?= $gh['tensp'] ?></a>
 
-                                                <span><?= $gh['soLuong']?> </span>
-                                                <span><?= number_format($gh['gia'])?>đ</span>
+                                                    <span><?= $gh['soLuong'] ?> </span>
+                                                    <span><?= number_format($gh['gia']) ?>đ</span>
 
-                                            </div>
-                                            <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
-                                                        class="ion-android-close"></i></a>
-                                            </div>
-                                        </div><?php endforeach;?>
+                                                </div>
+                                                <div class="cart_remove">
+                                                    <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                            class="ion-android-close"></i></a>
+                                                </div>
+                                            </div><?php endforeach; ?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
@@ -173,7 +170,7 @@ $timkiem = "
 
                                                     <tr>
                                                         <td class="text-left">Tổng cộng :</td>
-                                                       <td class="text-right"><?= number_format($tongTien) ?>đ</td>
+                                                        <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -267,39 +264,39 @@ $timkiem = "
     </header>
     <div class="d-flex">
         <!-- Sidebar -->
-     <div style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
-      <h2 class="text-center">Admin</h2>
-      <ul class="nav flex-column mt-4">
-        <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i> Thống kê</a></li>
-        <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i class="fa fa-shirt"></i> Sản phẩm</a></li>
-        <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i> Danh mục</a></li>
-        <li class="nav-item"><a href="quanly_donhang.php" class="nav-link text-black"><i class="fa fa-box"></i> Đơn hàng</a></li>
-        <li class="nav-item"><a href="quanly_khachhang.php" class="nav-link text-black"><i class="fa fa-users"></i> Khách hàng</a></li>
-        <li class="nav-item"><a href="quanly_magiamgia.php" class="nav-link text-black"><i class="fa fa-gift"></i> Mã giảm giá</a></li>
-        <li class="nav-item"><a href="reviews.html" class="nav-link text-black"><i class="fa fa-comments"></i> Đánh giá</a></li>
-        <li class="nav-item"><a href="settings.html" class="nav-link text-black"><i class="fa fa-cog"></i> Cài đặt</a></li>
-        <li class="nav-item"><a href="login.html" class="nav-link text-black"><i class="fa fa-sign-out"></i> Đăng xuất</a></li>
-      </ul>
-    </div>
+        <div style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
+            <h2 class="text-center">Admin</h2>
+            <ul class="nav flex-column mt-4">
+                <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i> Thống kê</a></li>
+                <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i class="fa fa-shirt"></i> Sản phẩm</a></li>
+                <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i> Danh mục</a></li>
+                <li class="nav-item"><a href="quanly_donhang.php" class="nav-link text-black"><i class="fa fa-box"></i> Đơn hàng</a></li>
+                <li class="nav-item"><a href="quanly_khachhang.php" class="nav-link text-black"><i class="fa fa-users"></i> Khách hàng</a></li>
+                <li class="nav-item"><a href="quanly_magiamgia.php" class="nav-link text-black"><i class="fa fa-gift"></i> Mã giảm giá</a></li>
+                <li class="nav-item"><a href="reviews.html" class="nav-link text-black"><i class="fa fa-comments"></i> Đánh giá</a></li>
+                <li class="nav-item"><a href="settings.html" class="nav-link text-black"><i class="fa fa-cog"></i> Cài đặt</a></li>
+                <li class="nav-item"><a href="login.html" class="nav-link text-black"><i class="fa fa-sign-out"></i> Đăng xuất</a></li>
+            </ul>
+        </div>
 
         <!-- Main content -->
         <div class="p-4 flex-grow-1">
             <h1 class="nav-link text-black">Quản lý sản phẩm</h1>
             <?php if (isset($_SESSION['message'])): ?>
-            <div
-                style="background: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border: 1px solid #c3e6cb; border-radius: 5px;">
-                <?= $_SESSION['message'] ?>
-            </div>
-            <?php unset($_SESSION['message']); ?>
+                <div
+                    style="background: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border: 1px solid #c3e6cb; border-radius: 5px;">
+                    <?= $_SESSION['message'] ?>
+                </div>
+                <?php unset($_SESSION['message']); ?>
             <?php endif; ?>
             <!-- Tìm kiếm & Sắp xếp -->
             <div class="row mb-3 align-items-center">
                 <div class="col-md-4">
                     <form action="" method="get" class="d-flex">
-                        
+
                         <input type="text" class="form-control me-2" name="search"
                             placeholder="Tìm theo tên sản phẩm hoặc danh mục..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
                 </div>
                 <div class="col-md-3">
                     <select name="sort" onchange="this.form.submit()" class="form-select">
@@ -318,10 +315,10 @@ $timkiem = "
             <!-- Bảng -->
             <form action="" method="get">
                 <select name="limit" onchange="this.form.submit()" id="">
-                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==5 ? "selected":"" ?> value="5">5</option>
-                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==20 ? "selected":"" ?> value="20">20</option>
-                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==50 ? "selected":"" ?> value="50">50</option>
-                    <option <?= isset($_GET["limit"]) && $_GET["limit"]==100 ? "selected":"" ?> value="100">100</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"] == 5 ? "selected" : "" ?> value="5">5</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"] == 20 ? "selected" : "" ?> value="20">20</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"] == 50 ? "selected" : "" ?> value="50">50</option>
+                    <option <?= isset($_GET["limit"]) && $_GET["limit"] == 100 ? "selected" : "" ?> value="100">100</option>
                 </select>
             </form>
             <table class="table table-bordered">
@@ -339,27 +336,27 @@ $timkiem = "
                 </thead>
                 <tbody>
                     <?php foreach ($sanphams as $sp): ?>
-                    <?php
-            $images = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$sp['id']]);
-          ?>
-                    <tr>
-                        <td><?= $sp['id'] ?></td>
-                        <td><?= $sp['ten'] ?></td>
-                        <td><?= $sp['moTa'] ?></td>
-                        <td><?= number_format($sp['gia'], 0, ',', '.') ?> đ</td>
-                        <td>
-                            <?php foreach ($images as $img): ?>
-                            <img src="<?= $img['anh'] ?>" width="60" />
-                            <?php endforeach; ?>
-                        </td>
-                        <td><?= $sp['category_name'] ?></td>
-                        <td><a class="btn btn-sm btn-warning" href="themsize.php?id=<?= $sp['id'] ?>">Thêm size</a></td>
-                        <td>
-                            <a class="btn btn-sm btn-warning" href="sua_sanpham.php?id=<?= $sp['id'] ?>">Sửa</a>
-                            <a class="btn btn-sm btn-danger" href="delete_sanpham.php?id=<?= $sp['id'] ?>">Xóa</a>
-                            <a class="btn btn-primary" href="xemchitiet.php?id=<?= $sp['id'] ?>">Xem chi tiết</a>
-                        </td>
-                    </tr>
+                        <?php
+                        $images = $db_util->getAll("SELECT * FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$sp['id']]);
+                        ?>
+                        <tr>
+                            <td><?= $sp['id'] ?></td>
+                            <td><?= $sp['ten'] ?></td>
+                            <td><?= $sp['moTa'] ?></td>
+                            <td><?= number_format($sp['gia'], 0, ',', '.') ?> đ</td>
+                            <td>
+                                <?php foreach ($images as $img): ?>
+                                    <img src="<?= $img['anh'] ?>" width="60" />
+                                <?php endforeach; ?>
+                            </td>
+                            <td><?= $sp['category_name'] ?></td>
+                            <td><a class="btn btn-sm btn-warning" href="themsize.php?id=<?= $sp['id'] ?>">Thêm size</a></td>
+                            <td>
+                                <a class="btn btn-sm btn-warning" href="sua_sanpham.php?id=<?= $sp['id'] ?>">Sửa</a>
+                                <a class="btn btn-sm btn-danger" href="delete_sanpham.php?id=<?= $sp['id'] ?>">Xóa</a>
+                                <a class="btn btn-primary" href="xemchitiet.php?id=<?= $sp['id'] ?>">Xem chi tiết</a>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
@@ -367,11 +364,11 @@ $timkiem = "
             <!-- Phân trang -->
             <nav>
                 <ul class="pagination">
-                    <?php for($index=1;$index<=$sotrang;$index++){?>
-                    <li class="page-item <?= $index == $page ? "active":"" ?>">
-                        <a class="page-link"
-                            href="?<?=http_build_query(array_merge($_GET,["page"=>$index])) ?>"><?= $index ?></a>
-                    </li>
+                    <?php for ($index = 1; $index <= $sotrang; $index++) { ?>
+                        <li class="page-item <?= $index == $page ? "active" : "" ?>">
+                            <a class="page-link"
+                                href="?<?= http_build_query(array_merge($_GET, ["page" => $index])) ?>"><?= $index ?></a>
+                        </li>
                     <?php } ?>
                 </ul>
 
