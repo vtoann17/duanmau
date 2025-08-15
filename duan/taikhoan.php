@@ -63,54 +63,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Main Style CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
-    <style>
-    body {
-        background-color: #f8f9fa;
-        padding: 20px;
-    }
+        <style>body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
 
-    .profile-card {
-        background: white;
-        border-radius: 10px;
-        max-width: 900px;
-        margin: auto;
-        flex: 1;
-        height: 600px;
-        overflow-y: auto;
-        border-radius: 10px;
-        padding: 30px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        margin-left: auto;
-        margin-top: 0;
-    }
+        .profile-card {
+            background: white;
+            border-radius: 10px;
+            max-width: 900px;
+            margin: auto;
+            flex: 1;
+            height: 600px;
+            overflow-y: auto;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-left: auto;
+            margin-top: 0;
+        }
 
-    .sidebar {
-        background-color: white;
-        color: black;
-        padding: 1rem;
-        height: 100vh;
-        width: 250px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-    }
+        .sidebar {
+            background-color: white;
+            color: black;
+            padding: 1rem;
+            height: 100vh;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
 
-    .d-flex {
-        display: flex;
-        align-items: stretch;
-    }
+        .d-flex {
+            display: flex;
+            align-items: stretch;
+        }
 
 
-    .avatar-preview {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #ccc;
-    }
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ccc;
+        }
 
-    .form-section label {
-        font-weight: bold;
-    }
+        .form-section label {
+            font-weight: bold;
+        }
     </style>
     </style>
 
@@ -135,22 +134,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             echo 'Tài khoản của tôi';
         }
-    ?>
+     ?>
                                         <i class="ion-chevron-down"></i></a>
-                                <ul class="dropdown_links">
+                                    <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
                                         <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                <li><a href="logout.php">Đăng xuất</a></li>
-                                <?php else: ?>
-                                <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
-                                <li><a href="logout.php">Đăng xuất</a></li>
-                                <?php endif; ?>
-                                <?php else: ?>
-                                <li><a href="login.php">Đăng nhập</a></li>
-                                <?php endif; ?>
-                            </ul>
-                            </li>
+                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php else: ?>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
+                                        <?php else: ?>
+                                        <li><a href="login.php">Đăng nhập</a></li>
+                                        <?php endif; ?>
+                                    </ul>
+                                </li>
 
                             </ul>
                         </div>
@@ -168,14 +167,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="col-lg-4">
                             <div class="search_bar">
                                 <form action="#">
-                                    <input placeholder="Search entire store here..." type="text">
+                                    <input placeholder="Tìm kiếm sản phẩm..." type="text">
                                     <button type="submit"><i class="ion-ios-search-strong"></i></button>
                                 </form>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="logo">
-                                <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                                <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -184,7 +183,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
-                                        <?php  ?>
                                         <?php $tongTien = 0;
                                      foreach($gioHang as $gh):
                                      $tongTien += $gh['thanhTien'];
@@ -259,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
                     <div class="logo_container">
-                        <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                        <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                     </div>
                     <div class="right_menu">
                         <div class="main_menu">

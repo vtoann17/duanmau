@@ -15,7 +15,7 @@ $sanphams = $db_util->getAll("
      LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id
     WHERE sp.id = ?
     ORDER BY sp.ngayTao DESC
-",[$id]);
+", [$id]);
 
 $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]);
 
@@ -43,7 +43,7 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
 </head>
 
 <body>
-    <header class="header_area header_three">
+   <header class="header_area header_three">
         <!--header top start-->
         <div class="header_top">
             <div class="container-fluid">
@@ -61,7 +61,7 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
         } else {
             echo 'Tài khoản của tôi';
         }
-    ?>
+     ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
@@ -94,14 +94,14 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
                         <div class="col-lg-4">
                             <div class="search_bar">
                                 <form action="#">
-                                    <input placeholder="Search entire store here..." type="text">
+                                    <input placeholder="Tìm kiếm sản phẩm..." type="text">
                                     <button type="submit"><i class="ion-ios-search-strong"></i></button>
                                 </form>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="logo">
-                                <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                                <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -110,12 +110,12 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
                                     <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
-                                           <?php $tongTien = 0;
+                                        <?php $tongTien = 0;
                                      foreach($gioHang as $gh):
                                      $tongTien += $gh['thanhTien'];
                                      $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
-                                            
+
                                             <div class="cart_img">
                                                 <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
@@ -127,7 +127,8 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
                                             </div>
                                         </div><?php endforeach;?>
                                         <div class="cart__table">
@@ -183,7 +184,7 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
                         </div>
                     </div>
                     <div class="logo_container">
-                        <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                        <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                     </div>
                     <div class="right_menu">
                         <div class="main_menu">
@@ -263,11 +264,11 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
         <div class="p-4 flex-grow-1">
             <h1 class="nav-link text-black">Quản lý sản phẩm</h1>
             <?php if (isset($_SESSION['message'])): ?>
-            <div
-                style="background: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border: 1px solid #c3e6cb; border-radius: 5px;">
-                <?= $_SESSION['message'] ?>
-            </div>
-            <?php unset($_SESSION['message']); ?>
+                <div
+                    style="background: #d4edda; color: #155724; padding: 10px; margin-bottom: 15px; border: 1px solid #c3e6cb; border-radius: 5px;">
+                    <?= $_SESSION['message'] ?>
+                </div>
+                <?php unset($_SESSION['message']); ?>
             <?php endif; ?>
             <div class="product_details">
                 <div class="container">
@@ -277,8 +278,8 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
 
                                 <div id="img-1" class="zoomWrapper single-zoom">
 
-                                    <?php foreach($sanphams as $sp): ?>
-                                    <img src="<?= $images['anh'] ?>" width="500" />
+                                    <?php foreach ($sanphams as $sp): ?>
+                                        <img src="<?= $images['anh'] ?>" width="500" />
                                 </div>
                             </div>
                         </div>
@@ -288,18 +289,9 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
 
                                     <h1><?= $sp['ten'] ?></h1>
                                     <div class=" product_ratting">
-                                        <ul>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li class="review"><a href="#"> 1 review </a></li>
-                                            <li class="review"><a href="#"> Write a review </a></li>
-                                        </ul>
                                     </div>
                                     <div class="product_price">
-                                        <span class="current_price"><?= $sp['gia'] ?></span>
+                                        <span class="current_price"><?=number_format($sp['gia']) ?>đ</span>
                                     </div>
                                     <div class="product_desc">
                                         <p> <?= $sp['moTa'] ?> </p>
@@ -311,7 +303,7 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
                                                         aria-hidden="true"></i> Thêm vào danh sách yêu thích</a></li>
                                         </ul>
                                     </div>
-                                    <?php endforeach; ?>
+                                <?php endforeach; ?>
                                 </form>
 
                             </div>
@@ -347,14 +339,14 @@ $images = $db_util->getOne("SELECT * FROM anhsanpham WHERE sanPhamID = ?", [$id]
                 </thead>
                 <tbody>
                     <?php
-        $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = ? ", [$sp['id']]);
-        ?>
+                    $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = ? ", [$sp['id']]);
+                    ?>
                     <?php foreach ($kichco as $kc): ?>
-                    <tr>
-                        <td><?= $kc['size'] ?? 'Chưa có' ?></td>
-                        <td><?= $kc['soLuong'] ?></td>
-                        <td><?= $kc['moTa'] ?></td>
-                    </tr>
+                        <tr>
+                            <td><?= $kc['size'] ?? 'Chưa có' ?></td>
+                            <td><?= $kc['soLuong'] ?></td>
+                            <td><?= $kc['moTa'] ?></td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>

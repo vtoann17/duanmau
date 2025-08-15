@@ -146,24 +146,24 @@ if (isset($_SESSION['user'])) {
                             <ul>
                                 <li class="top_links"><a href="#">
                                         <?php
-                                        if (isset($_SESSION['user'])) {
-                                            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
-                                        } else {
-                                            echo 'Tài khoản của tôi';
-                                        }
-                                        ?>
+        if (isset($_SESSION['user'])) {
+            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
+        } else {
+            echo 'Tài khoản của tôi';
+        }
+     ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                                                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                                <li><a href="logout.php">Đăng xuất</a></li>
-                                            <?php else: ?>
-                                                <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
-                                                <li><a href="logout.php">Đăng xuất</a></li>
-                                            <?php endif; ?>
+                                        <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
+                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
                                         <?php else: ?>
-                                            <li><a href="login.php">Đăng nhập</a></li>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
+                                        <?php else: ?>
+                                        <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
                                     </ul>
                                 </li>
@@ -184,14 +184,14 @@ if (isset($_SESSION['user'])) {
                         <div class="col-lg-4">
                             <div class="search_bar">
                                 <form action="#">
-                                    <input placeholder="Search entire store here..." type="text">
+                                    <input placeholder="Tìm kiếm sản phẩm..." type="text">
                                     <button type="submit"><i class="ion-ios-search-strong"></i></button>
                                 </form>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="logo">
-                                <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                                <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -201,25 +201,26 @@ if (isset($_SESSION['user'])) {
                                     <!--mini cart-->
                                     <div class="mini_cart">
                                         <?php $tongTien = 0;
-                                        foreach ($gioHang as $gh):
-                                            $tongTien += $gh['thanhTien'];
-                                            $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
-                                            <div class="cart_item top">
+                                     foreach($gioHang as $gh):
+                                     $tongTien += $gh['thanhTien'];
+                                     $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
+                                        <div class="cart_item top">
 
-                                                <div class="cart_img">
-                                                    <a href="#"><img src="<?= $anh['anh'] ?>" alt=""></a>
-                                                </div>
-                                                <div class="cart_info">
-                                                    <a href="#"><?= $gh['tensp'] ?></a>
+                                            <div class="cart_img">
+                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
+                                            </div>
+                                            <div class="cart_info">
+                                                <a href="#"><?= $gh['tensp']?></a>
 
-                                                    <span><?= $gh['soLuong'] ?> </span>
-                                                    <span><?= number_format($gh['gia']) ?>đ</span>
+                                                <span><?= $gh['soLuong']?> </span>
+                                                <span><?= number_format($gh['gia'])?>đ</span>
 
-                                                </div>
-                                                <div class="cart_remove">
-                                                    <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
-                                                </div>
-                                            </div><?php endforeach; ?>
+                                            </div>
+                                            <div class="cart_remove">
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
+                                            </div>
+                                        </div><?php endforeach;?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
@@ -273,7 +274,7 @@ if (isset($_SESSION['user'])) {
                         </div>
                     </div>
                     <div class="logo_container">
-                        <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                        <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                     </div>
                     <div class="right_menu">
                         <div class="main_menu">
