@@ -14,6 +14,7 @@ if (!empty($_GET['danhmuc'])) {
     $danhmucID = intval($_GET['danhmuc']);
     $tongdong = $db_utils->getValue("SELECT COUNT(*) FROM sanpham WHERE danhMucID = ?", [$danhmucID]);
     $sotrang = ceil($tongdong / $limit);
+
     $dsSanPham = $db_utils->getAll("
         SELECT sp.id, sp.ten, sp.gia, sp.moTa, asp.anh
         FROM sanpham sp
@@ -23,9 +24,11 @@ if (!empty($_GET['danhmuc'])) {
         ORDER BY $order_by
         LIMIT $limit OFFSET $offset
     ", [$danhmucID]);
+
 } else {
     $tongdong = $db_utils->getValue("SELECT COUNT(*) FROM sanpham");
     $sotrang = ceil($tongdong / $limit);
+
     $dsSanPham = $db_utils->getAll("
         SELECT sp.id, sp.ten, sp.gia, sp.moTa, asp.anh
         FROM sanpham sp
@@ -35,6 +38,7 @@ if (!empty($_GET['danhmuc'])) {
         LIMIT $limit OFFSET $offset
     ");
 }
+
 
 $start = ($tongdong > 0) ? ($offset + 1) : 0;
 $end = min($offset + $limit, $tongdong);
@@ -403,14 +407,11 @@ if (isset($_SESSION['user'])) {
                             </div>
 
                             <div class="niceselect_option">
-                                <form class="select_option" action="" methot="get">
+                                <form class="select_option" action="" method="get">
                                     <select name="sort" id="short" onchange="this.form.submit()">
-                                        <option value="">Sắp xếp theo đánh giá</option>
-                                        <option value="desc">Sắp xếp theo phổ biến</option>
-                                        <option value="desc">Sắp xếp theo sản phẩm mới</option>
-                                        <option value="desc">Giá: thấp đến cao</option>
-                                        <option value="asc">Giá: cao đến thấp</option>
-                                        <option value="desc">Tên sản phẩm: Z - A</option>
+                                        <option value="">Sắp xếp theo giá</option>
+                                        <option value="asc">Giá tăng dần</option>
+                                        <option value="desc">Giá giảm dần</option>
                                     </select>
                                 </form>
                             </div>
