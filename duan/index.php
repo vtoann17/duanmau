@@ -128,6 +128,7 @@ $spBanChay = $db_utils->getAll("
     .single_product:hover .product_hover_buttons {
         opacity: 1;
     }
+    
     </style>
 
 </head>
@@ -192,7 +193,7 @@ $spBanChay = $db_utils->getAll("
                         </div>
                         <div class="col-lg-4">
                             <div class="logo">
-                                <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                                <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -275,7 +276,7 @@ $spBanChay = $db_utils->getAll("
                         </div>
                     </div>
                     <div class="logo_container">
-                        <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                        <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                     </div>
                     <div class="right_menu">
                         <div class="main_menu">
@@ -328,41 +329,35 @@ $spBanChay = $db_utils->getAll("
 
     <!--slider area start-->
     <div class="slider_area slider_style home_three_slider owl-carousel">
-        <div class="single_slider" data-bgimg="assets/img/slider/slider4.jpg">
+        <div class="single_slider" data-bgimg="assets/img/slider/slide1.png">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-12">
-                        <div class="slider_content content_one">
-                            <img src="assets/img/slider/content3.png" alt="">
-                            <p>the wooboom clothing summer collection is back at half price</p>
-                            <a href="shop.html">Discover Now</a>
-                        </div>
+                        <!-- <div class="slider_content content_one">
+                            <img src="assets/img/slider/slide1.png" alt="">
+                        </div> -->
                     </div>
                 </div>
             </div>
         </div>
-        <div class="single_slider" data-bgimg="assets/img/slider/slider5.jpg">
+        <div class="single_slider" data-bgimg="assets/img/slider/slide2.png">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-12">
-                        <div class="slider_content content_two">
+                        <!-- <div class="slider_content content_two">
                             <img src="assets/img/slider/content4.png" alt="">
-                            <p>the wooboom clothing summer collection is back at half price</p>
-                            <a href="shop.html">Discover Now</a>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
         </div>
-        <div class="single_slider" data-bgimg="assets/img/slider/slider6.jpg">
+        <div class="single_slider" data-bgimg="assets/img/slider/slide3.png">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-12">
-                        <div class="slider_content content_three">
+                        <!-- <div class="slider_content content_three">
                             <img src="assets/img/slider/content5.png" alt="">
-                            <p>the wooboom clothing summer collection is back at half price</p>
-                            <a href="shop.html">Discover Now</a>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -371,33 +366,6 @@ $spBanChay = $db_utils->getAll("
     <!--slider area end-->
 
     <!--banner area start-->
-    <div class="banner_section banner_section_three">
-        <div class="container-fluid">
-            <div class="row ">
-                <div class="col-lg-4 col-md-6">
-                    <div class="banner_area">
-                        <div class="banner_thumb">
-                            <a href="shop.html"><img src="assets/img/bg/banner8.jpg" alt="#"></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="banner_area">
-                        <div class="banner_thumb">
-                            <a href="shop.html"><img src="assets/img/bg/banner9.jpg" alt="#"></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="banner_area bottom">
-                        <div class="banner_thumb">
-                            <a href="shop.html"><img src="assets/img/bg/banner10.jpg" alt="#"></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <!--banner area end-->
     <section class="product_section womens_product bottom">
         <div class="container">

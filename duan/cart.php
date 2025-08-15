@@ -25,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['capnhat'])) {
             $qty = intval($qty);
             if ($qty < 1) $qty = 1;
 
-            // Lấy thông tin tồn kho của sản phẩm trong giỏ
             $item = $db_util->getOne("
                 SELECT gh.kichCoID, kc.soLuong AS tonKho
                 FROM giohang gh
@@ -35,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['capnhat'])) {
 
             if ($item) {
                 if ($qty > $item['tonKho']) {
-                    $qty = $item['tonKho']; // Giới hạn không vượt quá tồn kho
+                    $qty = $item['tonKho']; 
                 }
                 $db_util->execute("UPDATE giohang SET soLuong = ? WHERE id = ?", [$qty, $cartID]);
             }
@@ -349,7 +348,7 @@ $gioHang = $db_util->getAll("
                                                         'SELECT soLuong FROM kichco WHERE id = ?',
                                                         [$gh['kichCoID']]
                                                     );
-                                                    $maxValue = $tonKho ? $tonKho['soLuong'] : 1; // mặc định 1 nếu không tìm thấy
+                                                    $maxValue = $tonKho ? $tonKho['soLuong'] : 1;
                                                     ?>
                                                     <input
                                                         min="1"

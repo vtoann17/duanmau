@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
-     if (!empty($_FILES['anh']['name'][0])) {
+    if (!empty($_FILES['anh']['name'][0])) {
         foreach ($_FILES['anh']['tmp_name'] as $index => $tmpName) {
             $fileName = basename($_FILES['anh']['name'][$index]);
             $targetPath = $upload_dir . time() . '_' . $fileName;
@@ -67,55 +67,55 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <!-- Main Style CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
-    .form-container {
-        max-width: 600px;
-        margin: 40px auto;
-        padding: 30px;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
+        .form-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
-    h2 {
-        text-align: center;
-        margin-bottom: 25px;
-    }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
 
-    label {
-        font-weight: 500;
-        display: block;
-        margin-top: 12px;
-    }
+        label {
+            font-weight: 500;
+            display: block;
+            margin-top: 12px;
+        }
 
-    input,
-    textarea,
-    select {
-        width: 100%;
-        padding: 10px;
-        margin-top: 6px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-    }
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
 
-    button {
-        margin-top: 20px;
-        padding: 10px 18px;
-        background-color: #ff6600;
-        border: none;
-        color: white;
-        border-radius: 6px;
-        cursor: pointer;
-    }
+        button {
+            margin-top: 20px;
+            padding: 10px 18px;
+            background-color: #ff6600;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
 
-    button:hover {
-        background-color: #ff6600;
-    }
+        button:hover {
+            background-color: #ff6600;
+        }
 
-    .back-link {
-        display: block;
-        margin-top: 20px;
-        text-align: center;
-    }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -138,7 +138,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         } else {
             echo 'Tài khoản của tôi';
         }
-    ?>
+     ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
@@ -171,14 +171,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <div class="col-lg-4">
                             <div class="search_bar">
                                 <form action="#">
-                                    <input placeholder="Search entire store here..." type="text">
+                                    <input placeholder="Tìm kiếm sản phẩm..." type="text">
                                     <button type="submit"><i class="ion-ios-search-strong"></i></button>
                                 </form>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="logo">
-                                <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                                <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -187,12 +187,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                     <a href="#"><i class="fa fa-shopping-basket"></i></a>
                                     <!--mini cart-->
                                     <div class="mini_cart">
-                                           <?php $tongTien = 0;
+                                        <?php $tongTien = 0;
                                      foreach($gioHang as $gh):
                                      $tongTien += $gh['thanhTien'];
                                      $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
                                         <div class="cart_item top">
-                                            
+
                                             <div class="cart_img">
                                                 <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
                                             </div>
@@ -204,7 +204,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                                             </div>
                                             <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
                                             </div>
                                         </div><?php endforeach;?>
                                         <div class="cart__table">
@@ -260,7 +261,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         </div>
                     </div>
                     <div class="logo_container">
-                        <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                        <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                     </div>
                     <div class="right_menu">
                         <div class="main_menu">
@@ -326,7 +327,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <select name="category_id" required>
                 <option value="">-- Chọn danh mục --</option>
                 <?php foreach ($dsDanhMuc as $dm): ?>
-                <option value="<?= $dm['id'] ?>"><?= $dm['tenDanhMuc'] ?></option>
+                    <option value="<?= $dm['id'] ?>"><?= $dm['tenDanhMuc'] ?></option>
                 <?php endforeach; ?>
             </select><br><br>
 

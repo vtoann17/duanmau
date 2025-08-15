@@ -5,10 +5,9 @@ $db_util = new DB_UTILS();
 
 $tbloi = '';
 
-// Lấy ID sản phẩm từ URL
+
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Lấy thông tin sản phẩm chính và kiểm tra tồn tại
 $sanPham = $db_util->getOne("SELECT sp.*, dm.tenDanhMuc 
                         FROM sanpham sp 
                         LEFT JOIN danhmuc dm ON sp.danhMucID = dm.id 
@@ -17,20 +16,17 @@ if (!$sanPham) {
     die("Không tìm thấy sản phẩm!");
 }
 
-// Lấy ảnh sản phẩm
+
 $anhSP = $db_util->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$id]);
 $anhPhu = $db_util->getAll("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 0", [$id]);
 
-// Lấy kích cỡ
+
 $kichco = $db_util->getAll("SELECT * FROM kichco WHERE idSanPham = ?", [$id]);
 
-// Lấy sản phẩm liên quan (trừ sản phẩm hiện tại)
 $sanPhamLienQuan = $db_util->getAll("SELECT * FROM sanpham WHERE danhMucID = ? AND id != ? LIMIT 8", [$sanPham['danhMucID'], $id]);
 
-// Lấy sản phẩm upsell
 $upsellSanPham = $db_util->getAll("SELECT * FROM sanpham WHERE id != ? ORDER BY RAND() LIMIT 4", [$id]);
 
-// ======= XỬ LÝ THÊM VÀO GIỎ HÀNG =======
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
     if (empty($_SESSION["user"])) {
         header('Location: login.php');
@@ -74,13 +70,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"])) {
             }
         }
     }
-     if (empty($tbloi)) {
+    if (empty($tbloi)) {
         header("Location: cart.php");
         exit();
     }
 }
 
-// ======= XÓA SẢN PHẨM KHỎI GIỎ HÀNG =======
+
 if (isset($_GET['delete_id']) && !empty($_SESSION['user'])) {
     $idCanXoa = intval($_GET['delete_id']);
     $nguoiDungID = $_SESSION['user']['id'];
@@ -89,7 +85,7 @@ if (isset($_GET['delete_id']) && !empty($_SESSION['user'])) {
     exit();
 }
 
-// ======= LẤY DỮ LIỆU GIỎ HÀNG =======
+
 $gioHang = [];
 if (!empty($_SESSION['user'])) {
     $nguoiDungID = $_SESSION['user']['id'];
@@ -198,7 +194,7 @@ if (empty($_SESSION["user"])) {
                         </div>
                         <div class="col-lg-4">
                             <div class="logo">
-                                <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                                <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -281,7 +277,7 @@ if (empty($_SESSION["user"])) {
                         </div>
                     </div>
                     <div class="logo_container">
-                        <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                        <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                     </div>
                     <div class="right_menu">
                         <div class="main_menu">
@@ -391,15 +387,6 @@ if (empty($_SESSION["user"])) {
                             <input type="hidden" name="sanPhamID" value="<?= $sanPham['id'] ?>">
                             <h1><?php echo $sanPham['ten']; ?></h1>
                             <div class=" product_ratting">
-                                <ul>
-                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                    <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                    <li class="review"><a href="#"> 1 review </a></li>
-                                    <li class="review"><a href="#"> Write a review </a></li>
-                                </ul>
                             </div>
                             <div class="product_price">
                                 <span class="current_price"><?php echo number_format($sanPham['gia']); ?>đ</span>
@@ -441,128 +428,7 @@ if (empty($_SESSION["user"])) {
     <!--product details end-->
 
     <!--product info start-->
-    <div class="product_d_info">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="product_d_inner">
-                        <div class="product_info_button">
-                            <ul class="nav" role="tablist">
-                                <li>
-                                    <a class="active" data-toggle="tab" href="#info" role="tab" aria-controls="info"
-                                        aria-selected="false">Thông tin thêm</a>
-                                </li>
-                                <li>
-                                    <a data-toggle="tab" href="#sheet" role="tab" aria-controls="sheet"
-                                        aria-selected="false">Bảng dữ liệu</a>
-                                </li>
-                                <li>
-                                    <a data-toggle="tab" href="#reviews" role="tab" aria-controls="reviews"
-                                        aria-selected="false">Đánh giá</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="tab-content">
-                            <div class="tab-pane fade show active" id="info" role="tabpanel">
-                                <div class="product_info_content">
-                                    <p>Fashion has been creating well-designed collections since 2010. The brand offers
-                                        feminine designs delivering stylish separates and statement dresses which have
-                                        since evolved into a full ready-to-wear collection in which every item is a
-                                        vital part of a woman's wardrobe. The result? Cool, easy, chic looks with
-                                        youthful elegance and unmistakable signature style. All the beautiful pieces are
-                                        made in Italy and manufactured with the greatest attention. Now Fashion extends
-                                        to a range of accessories including shoes, hats, belts and more!</p>
-                                </div>
-                            </div>
-
-                            <div class="tab-pane fade" id="sheet" role="tabpanel">
-                                <div class="product_d_table">
-                                    <form action="#">
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="first_child">Compositions</td>
-                                                    <td>Polyester</td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="first_child">Styles</td>
-                                                    <td>Girly</td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="first_child">Properties</td>
-                                                    <td>Short Dress</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </form>
-                                </div>
-                                <div class="product_info_content">
-                                    <p>Fashion has been creating well-designed collections since 2010. The brand offers
-                                        feminine designs delivering stylish separates and statement dresses which have
-                                        since evolved into a full ready-to-wear collection in which every item is a
-                                        vital part of a woman's wardrobe. The result? Cool, easy, chic looks with
-                                        youthful elegance and unmistakable signature style. All the beautiful pieces are
-                                        made in Italy and manufactured with the greatest attention. Now Fashion extends
-                                        to a range of accessories including shoes, hats, belts and more!</p>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="reviews" role="tabpanel">
-                                <div class="product_info_content">
-                                    <p>Fashion has been creating well-designed collections since 2010. The brand offers
-                                        feminine designs delivering stylish separates and statement dresses which have
-                                        since evolved into a full ready-to-wear collection in which every item is a
-                                        vital part of a woman's wardrobe. The result? Cool, easy, chic looks with
-                                        youthful elegance and unmistakable signature style. All the beautiful pieces are
-                                        made in Italy and manufactured with the greatest attention. Now Fashion extends
-                                        to a range of accessories including shoes, hats, belts and more!</p>
-                                </div>
-                                <div class="product_info_inner">
-                                    <div class="product_ratting mb-10">
-                                        <ul>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                            <li><a href="#"><i class="fa fa-star"></i></a></li>
-                                        </ul>
-                                        <strong>Posthemes</strong>
-                                        <p>09/07/2018</p>
-                                    </div>
-                                    <div class="product_demo">
-                                        <strong>demo</strong>
-                                        <p>That's OK!</p>
-                                    </div>
-                                </div>
-                                <div class="product_review_form">
-                                    <form action="#">
-                                        <h2>Thêm đánh giá </h2>
-                                        <p>Địa chỉ email của bạn sẽ không được công bố. Các trường bắt buộc được đánh
-                                            dấu </p>
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <label for="review_comment">Đánh giá của bạn </label>
-                                                <textarea name="comment" id="review_comment"></textarea>
-                                            </div>
-                                            <div class="col-lg-6 col-md-6">
-                                                <label for="author">Tên</label>
-                                                <input id="author" type="text">
-
-                                            </div>
-                                            <div class="col-lg-6 col-md-6">
-                                                <label for="email">Email </label>
-                                                <input id="email" type="text">
-                                            </div>
-                                        </div>
-                                        <button type="submit">Nộp</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
     <!--product info end-->
 
     <!--product section area start-->

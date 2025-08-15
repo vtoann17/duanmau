@@ -96,7 +96,7 @@ if (isset($_GET['id'])) {
         } else {
             echo 'Tài khoản của tôi';
         }
-    ?>
+     ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
@@ -129,14 +129,14 @@ if (isset($_GET['id'])) {
                         <div class="col-lg-4">
                             <div class="search_bar">
                                 <form action="#">
-                                    <input placeholder="Search entire store here..." type="text">
+                                    <input placeholder="Tìm kiếm sản phẩm..." type="text">
                                     <button type="submit"><i class="ion-ios-search-strong"></i></button>
                                 </form>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="logo">
-                                <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                                <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -170,23 +170,23 @@ if (isset($_GET['id'])) {
                                             <table>
                                                 <tbody>
                                                     <tr>
-                                                        <td class="text-left">Tổng phụ</td>
+                                                        <td class="text-left">Tổng phụ:</td>
                                                         <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
 
                                                     <tr>
-                                                        <td class="text-left">Total :</td>
-                                                        <td class="text-right">$184.00</td>
+                                                        <td class="text-left">Tổng cộng :</td>
+                                                       <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                         </div>
 
                                         <div class="cart_button view_cart">
-                                            <a href="cart.php">View Cart</a>
+                                            <a href="cart.php">Giỏ hàng</a>
                                         </div>
                                         <div class="cart_button checkout">
-                                            <a href="checkout.php">Checkout</a>
+                                            <a href="dathang.php">Thanh toán</a>
                                         </div>
                                     </div>
                                     <!--mini cart end-->
@@ -219,7 +219,7 @@ if (isset($_GET['id'])) {
                         </div>
                     </div>
                     <div class="logo_container">
-                        <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                        <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                     </div>
                     <div class="right_menu">
                         <div class="main_menu">

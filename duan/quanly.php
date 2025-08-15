@@ -3,7 +3,6 @@ session_start();
 require_once "db_utils.php";
 $db_util = new DB_UTILS();
 
-// Lấy dữ liệu
 $sanphams = $db_util->getAll("
     SELECT sp.*, dm.tenDanhMuc AS tenDM 
     FROM sanpham sp 
@@ -24,21 +23,18 @@ $danhmucs = $db_util->getAll("
     SELECT * FROM danhmuc 
     ORDER BY id DESC
 ");
-// Doanh thu hôm nay
 $doanhThuNgay = $db_util->getOne("
     SELECT SUM(tongTien) AS total 
     FROM donhang 
     WHERE DATE(ngayDat) = CURDATE()
 ")['total'] ?? 0;
 
-// Doanh thu tuần này
 $doanhThuTuan = $db_util->getOne("
     SELECT SUM(tongTien) AS total 
     FROM donhang 
     WHERE YEARWEEK(ngayDat, 1) = YEARWEEK(CURDATE(), 1)
 ")['total'] ?? 0;
 
-// Doanh thu tháng này
 $doanhThuThang = $db_util->getOne("
     SELECT SUM(tongTien) AS total 
     FROM donhang 
@@ -103,24 +99,24 @@ $sanPhamBanChay = $db_util->getAll("
                             <ul>
                                 <li class="top_links"><a href="#">
                                         <?php
-                                        if (isset($_SESSION['user'])) {
-                                            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
-                                        } else {
-                                            echo 'Tài khoản của tôi';
-                                        }
-                                        ?>
+        if (isset($_SESSION['user'])) {
+            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
+        } else {
+            echo 'Tài khoản của tôi';
+        }
+     ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                                                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                                <li><a href="logout.php">Đăng xuất</a></li>
-                                            <?php else: ?>
-                                                <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
-                                                <li><a href="logout.php">Đăng xuất</a></li>
-                                            <?php endif; ?>
+                                        <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
+                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
                                         <?php else: ?>
-                                            <li><a href="login.php">Đăng nhập</a></li>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
+                                        <?php else: ?>
+                                        <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
                                     </ul>
                                 </li>
@@ -141,14 +137,14 @@ $sanPhamBanChay = $db_util->getAll("
                         <div class="col-lg-4">
                             <div class="search_bar">
                                 <form action="#">
-                                    <input placeholder="Search entire store here..." type="text">
+                                    <input placeholder="Tìm kiếm sản phẩm..." type="text">
                                     <button type="submit"><i class="ion-ios-search-strong"></i></button>
                                 </form>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="logo">
-                                <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                                <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -158,25 +154,26 @@ $sanPhamBanChay = $db_util->getAll("
                                     <!--mini cart-->
                                     <div class="mini_cart">
                                         <?php $tongTien = 0;
-                                        foreach ($gioHang as $gh):
-                                            $tongTien += $gh['thanhTien'];
-                                            $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
-                                            <div class="cart_item top">
+                                     foreach($gioHang as $gh):
+                                     $tongTien += $gh['thanhTien'];
+                                     $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
+                                        <div class="cart_item top">
 
-                                                <div class="cart_img">
-                                                    <a href="#"><img src="<?= $anh['anh'] ?>" alt=""></a>
-                                                </div>
-                                                <div class="cart_info">
-                                                    <a href="#"><?= $gh['tensp'] ?></a>
+                                            <div class="cart_img">
+                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
+                                            </div>
+                                            <div class="cart_info">
+                                                <a href="#"><?= $gh['tensp']?></a>
 
-                                                    <span><?= $gh['soLuong'] ?> </span>
-                                                    <span><?= number_format($gh['gia']) ?>đ</span>
+                                                <span><?= $gh['soLuong']?> </span>
+                                                <span><?= number_format($gh['gia'])?>đ</span>
 
-                                                </div>
-                                                <div class="cart_remove">
-                                                    <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i class="ion-android-close"></i></a>
-                                                </div>
-                                            </div><?php endforeach; ?>
+                                            </div>
+                                            <div class="cart_remove">
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
+                                            </div>
+                                        </div><?php endforeach;?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
@@ -230,7 +227,7 @@ $sanPhamBanChay = $db_util->getAll("
                         </div>
                     </div>
                     <div class="logo_container">
-                        <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                        <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                     </div>
                     <div class="right_menu">
                         <div class="main_menu">
@@ -284,7 +281,7 @@ $sanPhamBanChay = $db_util->getAll("
     <div style="background-color: white; color: black; padding: 1rem; height: 100vh; width: 250px; border: 1px solid #ccc; border-radius: 8px;">
       <h2 class="text-center">Admin</h2>
       <ul class="nav flex-column mt-4">
-        <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i> Dashboard</a></li>
+        <li class="nav-item"><a href="quanly.php" class="nav-link text-black"><i class="fa fa-chart-line"></i> Thống kê</a></li>
         <li class="nav-item"><a href="quanly_sanpham.php" class="nav-link text-black"><i class="fa fa-shirt"></i> Sản phẩm</a></li>
         <li class="nav-item"><a href="quanly_danhmuc.php" class="nav-link text-black"><i class="fa fa-tags"></i> Danh mục</a></li>
         <li class="nav-item"><a href="quanly_donhang.php" class="nav-link text-black"><i class="fa fa-box"></i> Đơn hàng</a></li>
@@ -370,7 +367,7 @@ $sanPhamBanChay = $db_util->getAll("
         </div>
     </div>
 </div>
->
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

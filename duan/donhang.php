@@ -14,21 +14,15 @@ if (!isset($_SESSION['user'])) {
 }
 
 $userId = $_SESSION['user']['id'];
-// $gioHang = $db_utils->getAll("
-//     SELECT gh.id, gh.soLuong, 
-//            sp.ten AS tensp, 
-//            kc.size, 
-//            sp.id AS sanPhamID,
-//            sp.gia AS gia,
-//            (sp.gia * gh.soLuong) AS thanhTien
-//     FROM giohang gh
-//     JOIN sanpham sp ON gh.sanPhamID = sp.id
-//     JOIN kichco kc ON gh.kichCoID = kc.id
-//     WHERE gh.nguoiDungID = ?
-// ", [$userId]);
 if (isset($_GET['action']) && $_GET['action'] === 'huy' && !empty($_GET['id'])) {
     $id = (int)$_GET['id'];
-    $db_utils->execute("
+    $chitiet = $db_utils->getAll("SELECT * FROM chitietdonhang WHERE donHangID = ?", [$id]);
+    foreach($chitiet as $item){
+        $idkichco = $item['bienTheID'];
+        $soluong = $item['soLuong'];
+        $db_utils->execute("UPDATE kichco SET soLuong = soLuong + ? WHERE id = ?", [$soluong, $idkichco]);
+    }
+        $db_utils->execute("
         UPDATE donhang 
         SET trangThai = 'da_huy' 
         WHERE id = ? 
@@ -39,11 +33,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'huy' && !empty($_GET['id'])) 
     header("Location: donhang.php");
     exit;
 }
-// Xử lý Mua lại
+
 if (isset($_GET['action']) && $_GET['action'] === 'mualai' && !empty($_GET['id'])) {
     $donhangId = (int)$_GET['id'];
 
-    // Lấy danh sách sản phẩm từ đơn hàng + join bảng kichco để lấy idSanPham & size
     $sanphams = $db_utils->getAll("
         SELECT kc.idSanPham AS sanPhamID, kc.size, ct.soLuong
         FROM chitietdonhang ct
@@ -53,7 +46,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'mualai' && !empty($_GET['id']
     ", [$donhangId, $userId]);
 
     foreach ($sanphams as $sp) {
-        // Kiểm tra sản phẩm đã có trong giỏ chưa (theo sanPhamID + size)
         $gioHang = $db_utils->getOne("
             SELECT id FROM giohang 
             WHERE nguoiDungID = ? AND sanPhamID = ? AND kichCoID = (
@@ -62,20 +54,17 @@ if (isset($_GET['action']) && $_GET['action'] === 'mualai' && !empty($_GET['id']
         ", [$userId, $sp['sanPhamID'], $sp['sanPhamID'], $sp['size']]);
 
         if ($gioHang) {
-            // Nếu có thì cộng thêm số lượng
             $db_utils->execute("
                 UPDATE giohang 
                 SET soLuong = soLuong + ? 
                 WHERE id = ?
             ", [$sp['soLuong'], $gioHang['id']]);
         } else {
-            // Nếu chưa có thì thêm mới
             $kichCoID = $db_utils->getValue("
                 SELECT id FROM kichco WHERE idSanPham = ? AND size = ?
             ", [$sp['sanPhamID'], $sp['size']]);
 
             if ($kichCoID) {
-                // Lấy giá sản phẩm từ bảng sanpham
                 $giaSP = $db_utils->getValue("
         SELECT gia FROM sanpham WHERE id = ?
     ", [$sp['sanPhamID']]);
@@ -95,7 +84,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'mualai' && !empty($_GET['id']
 $statusFilter = $_GET['status'] ?? '';
 $params = [$userId];
 
-// Nếu có lọc trạng thái
 $sqlFilter = '';
 if (!empty($statusFilter)) {
     $sqlFilter = " AND dh.trangThai = ? ";
@@ -192,24 +180,24 @@ $trangThaiDonHang = [
                             <ul>
                                 <li class="top_links"><a href="#">
                                         <?php
-                                        if (isset($_SESSION['user'])) {
-                                            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
-                                        } else {
-                                            echo 'Tài khoản của tôi';
-                                        }
-                                        ?>
+        if (isset($_SESSION['user'])) {
+            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
+        } else {
+            echo 'Tài khoản của tôi';
+        }
+     ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                                                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                                <li><a href="logout.php">Đăng xuất</a></li>
-                                            <?php else: ?>
-                                                <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
-                                                <li><a href="logout.php">Đăng xuất</a></li>
-                                            <?php endif; ?>
+                                        <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
+                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
                                         <?php else: ?>
-                                            <li><a href="login.php">Đăng nhập</a></li>
+                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                        <?php endif; ?>
+                                        <?php else: ?>
+                                        <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
                                     </ul>
                                 </li>
@@ -230,14 +218,14 @@ $trangThaiDonHang = [
                         <div class="col-lg-4">
                             <div class="search_bar">
                                 <form action="#">
-                                    <input placeholder="Search entire store here..." type="text">
+                                    <input placeholder="Tìm kiếm sản phẩm..." type="text">
                                     <button type="submit"><i class="ion-ios-search-strong"></i></button>
                                 </form>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="logo">
-                                <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                                <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -247,47 +235,47 @@ $trangThaiDonHang = [
                                     <!--mini cart-->
                                     <div class="mini_cart">
                                         <?php $tongTien = 0;
-                                        foreach ($gioHang as $gh):
-                                            $tongTien += $gh['thanhTien'];
-                                            $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
-                                            <div class="cart_item top">
+                                     foreach($gioHang as $gh):
+                                     $tongTien += $gh['thanhTien'];
+                                     $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
+                                        <div class="cart_item top">
 
-                                                <div class="cart_img">
-                                                    <a href="#"><img src="<?= $anh['anh'] ?>" alt=""></a>
-                                                </div>
-                                                <div class="cart_info">
-                                                    <a href="#"><?= $gh['tensp'] ?></a>
+                                            <div class="cart_img">
+                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
+                                            </div>
+                                            <div class="cart_info">
+                                                <a href="#"><?= $gh['tensp']?></a>
 
-                                                    <span><?= $gh['soLuong'] ?> </span>
-                                                    <span><?= number_format($gh['gia']) ?>đ</span>
+                                                <span><?= $gh['soLuong']?> </span>
+                                                <span><?= number_format($gh['gia'])?>đ</span>
 
-                                                </div>
-                                                <div class="cart_remove">
-                                                    <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
-                                                            class="ion-android-close"></i></a>
-                                                </div>
-                                            </div><?php endforeach; ?>
+                                            </div>
+                                            <div class="cart_remove">
+                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                        class="ion-android-close"></i></a>
+                                            </div>
+                                        </div><?php endforeach;?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
                                                     <tr>
-                                                        <td class="text-left">Tổng phụ</td>
+                                                        <td class="text-left">Tổng phụ:</td>
                                                         <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
 
                                                     <tr>
-                                                        <td class="text-left">Total :</td>
-                                                        <td class="text-right">$184.00</td>
+                                                        <td class="text-left">Tổng cộng :</td>
+                                                       <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                         </div>
 
                                         <div class="cart_button view_cart">
-                                            <a href="cart.php">View Cart</a>
+                                            <a href="cart.php">Giỏ hàng</a>
                                         </div>
                                         <div class="cart_button checkout">
-                                            <a href="checkout.php">Checkout</a>
+                                            <a href="dathang.php">Thanh toán</a>
                                         </div>
                                     </div>
                                     <!--mini cart end-->
@@ -320,7 +308,7 @@ $trangThaiDonHang = [
                         </div>
                     </div>
                     <div class="logo_container">
-                        <a href="index.php"><img src="assets/img/logo/logo.png" alt=""></a>
+                        <a href="index.php"><img src="assets/img/logo/logo2.png" alt=""></a>
                     </div>
                     <div class="right_menu">
                         <div class="main_menu">
