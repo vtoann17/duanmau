@@ -7,32 +7,31 @@ $connect = $db->getConnection();
 
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
     if (!empty($_GET['id'])) {
-        $sanPhamID = $_GET['id'];
+        $maSanPham = (int) $_GET['id'];
+        $danhSachBang = [
+            "anhsanpham" => "sanPhamID",
+            "danhgia" => "sanPhamID",
+            "dsyeuthich" => "sanPhamID",
+            "giohang" => "sanPhamID",
+            "kichco" => "idSanPham"
+        ];
 
-        try {
-            $connect->beginTransaction();
-
-            // Xóa ảnh sản phẩm
-            $stmt = $connect->prepare("DELETE FROM anhsanpham WHERE sanPhamID = :id");
-            $stmt->bindParam(':id', $sanPhamID, PDO::PARAM_INT);
-            $stmt->execute();
-
-            // Xóa sản phẩm chính
-            $stmt = $connect->prepare("DELETE FROM sanpham WHERE id = :id");
-            $stmt->bindParam(':id', $sanPhamID, PDO::PARAM_INT);
-            $stmt->execute();
-
-            $connect->commit();
-            $_SESSION['message'] = 'Đã xóa sản phẩm thành công!';
-        } catch (Exception $e) {
-            $connect->rollBack();
-            $_SESSION['message'] = 'Lỗi khi xóa sản phẩm: ' . $e->getMessage();
+        foreach ($danhSachBang as $tenBang => $cotLienKet) {
+            $lenhXoa = $connect->prepare("DELETE FROM {$tenBang} WHERE {$cotLienKet} = :id");
+            $lenhXoa->bindParam(':id', $maSanPham, PDO::PARAM_INT);
+            $lenhXoa->execute();
         }
+
+        $lenhXoa = $connect->prepare("DELETE FROM sanpham WHERE id = :id");
+        $lenhXoa->bindParam(':id', $maSanPham, PDO::PARAM_INT);
+        $lenhXoa->execute();
+
+        $_SESSION['message'] = 'Đã xóa sản phẩm thành công!';
 
         header("Location: quanly_sanpham.php");
         exit();
     } else {
-        echo "ID không hợp lệ!";
+        echo "Mã sản phẩm không hợp lệ!";
     }
 }
 ?>

@@ -5,31 +5,45 @@ $db_utils = new DB_UTILS();
 $limit =  $_GET["limit"] ?? 6;
 $page = $_GET["page"] ??  1;
 $offset = ($page - 1) * $limit;
-$order_by = "sp.id DESC"; // mặc định
+$order_by = "sp.id DESC"; 
 
 $danhMucList = $db_utils->getAll("SELECT id, tenDanhMuc FROM danhmuc");
 
-$tongdong = $db_utils->getValue("SELECT COUNT(*) FROM sanpham");
-$sotrang = ceil($tongdong / $limit);
-$dsSanPham = $db_utils->getAll("
-    SELECT sp.id, sp.ten, sp.gia, sp.moTa, asp.anh
-    FROM sanpham sp
-    LEFT JOIN anhsanpham asp ON sp.id = asp.sanPhamID
-    GROUP BY sp.id
-    ORDER BY $order_by
-    LIMIT $limit OFFSET $offset
-");
-//   $dsSanPham = $db_utils->getAll('select * from sanpham  sp left join danhmuc dm on sp.maloai = dm.maloai');
-//  echo "<pre>";
-//   var_dump($dsSanPham);
-//   echo "<pre>";
-//   die;
+
+if (!empty($_GET['danhmuc'])) {
+    $danhmucID = intval($_GET['danhmuc']);
+    $tongdong = $db_utils->getValue("SELECT COUNT(*) FROM sanpham WHERE danhMucID = ?", [$danhmucID]);
+    $sotrang = ceil($tongdong / $limit);
+    $dsSanPham = $db_utils->getAll("
+        SELECT sp.id, sp.ten, sp.gia, sp.moTa, asp.anh
+        FROM sanpham sp
+        LEFT JOIN anhsanpham asp ON sp.id = asp.sanPhamID
+        WHERE sp.danhMucID = ?
+        GROUP BY sp.id
+        ORDER BY $order_by
+        LIMIT $limit OFFSET $offset
+    ", [$danhmucID]);
+} else {
+    $tongdong = $db_utils->getValue("SELECT COUNT(*) FROM sanpham");
+    $sotrang = ceil($tongdong / $limit);
+    $dsSanPham = $db_utils->getAll("
+        SELECT sp.id, sp.ten, sp.gia, sp.moTa, asp.anh
+        FROM sanpham sp
+        LEFT JOIN anhsanpham asp ON sp.id = asp.sanPhamID
+        GROUP BY sp.id
+        ORDER BY $order_by
+        LIMIT $limit OFFSET $offset
+    ");
+}
+
+$start = ($tongdong > 0) ? ($offset + 1) : 0;
+$end = min($offset + $limit, $tongdong);
+
 
 if (isset($_GET['delete_id'])) {
     $idCanXoa = intval($_GET['delete_id']);
-    // Xóa sản phẩm khỏi giỏ nếu đúng ID và thuộc về user
     $db_util->execute("DELETE FROM giohang WHERE id = ? AND nguoiDungID = ?", [$idCanXoa, $nguoiDungID]);
-    header("Location: cart.php"); // reload lại để tránh xóa lặp
+    header("Location: cart.php");
     exit();
 }
 if (isset($_SESSION['user'])) {
@@ -57,7 +71,7 @@ if (isset($_SESSION['user'])) {
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Shop category</title>
+    <title>Sản phẩm</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Favicon -->
@@ -146,24 +160,24 @@ if (isset($_SESSION['user'])) {
                             <ul>
                                 <li class="top_links"><a href="#">
                                         <?php
-        if (isset($_SESSION['user'])) {
-            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
-        } else {
-            echo 'Tài khoản của tôi';
-        }
-     ?>
+                                        if (isset($_SESSION['user'])) {
+                                            echo $_SESSION['user']['vaiTro'] == 'admin' ? 'Admin' : $_SESSION['user']['ten'];
+                                        } else {
+                                            echo 'Tài khoản của tôi';
+                                        }
+                                        ?>
                                         <i class="ion-chevron-down"></i></a>
                                     <ul class="dropdown_links">
                                         <?php if (isset($_SESSION['user'])): ?>
-                                        <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
-                                        <li><a href="quanly.php">Quản lý cửa hàng</a></li>
-                                        <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php if ($_SESSION['user']['vaiTro'] == 'admin'): ?>
+                                                <li><a href="quanly.php">Quản lý cửa hàng</a></li>
+                                                <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php else: ?>
+                                                <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
+                                                <li><a href="logout.php">Đăng xuất</a></li>
+                                            <?php endif; ?>
                                         <?php else: ?>
-                                        <li><a href="taikhoan.php">Thông tin tài khoản</a></li>
-                                        <li><a href="logout.php">Đăng xuất</a></li>
-                                        <?php endif; ?>
-                                        <?php else: ?>
-                                        <li><a href="login.php">Đăng nhập</a></li>
+                                            <li><a href="login.php">Đăng nhập</a></li>
                                         <?php endif; ?>
                                     </ul>
                                 </li>
@@ -201,26 +215,26 @@ if (isset($_SESSION['user'])) {
                                     <!--mini cart-->
                                     <div class="mini_cart">
                                         <?php $tongTien = 0;
-                                     foreach($gioHang as $gh):
-                                     $tongTien += $gh['thanhTien'];
-                                     $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
-                                        <div class="cart_item top">
+                                        foreach ($gioHang as $gh):
+                                            $tongTien += $gh['thanhTien'];
+                                            $anh = $db_utils->getOne("SELECT anh FROM anhsanpham WHERE sanPhamID = ? AND anhChinh = 1", [$gh['sanPhamID']]); ?>
+                                            <div class="cart_item top">
 
-                                            <div class="cart_img">
-                                                <a href="#"><img src="<?= $anh['anh']?>" alt=""></a>
-                                            </div>
-                                            <div class="cart_info">
-                                                <a href="#"><?= $gh['tensp']?></a>
+                                                <div class="cart_img">
+                                                    <a href="#"><img src="<?= $anh['anh'] ?>" alt=""></a>
+                                                </div>
+                                                <div class="cart_info">
+                                                    <a href="#"><?= $gh['tensp'] ?></a>
 
-                                                <span><?= $gh['soLuong']?> </span>
-                                                <span><?= number_format($gh['gia'])?>đ</span>
+                                                    <span><?= $gh['soLuong'] ?> </span>
+                                                    <span><?= number_format($gh['gia']) ?>đ</span>
 
-                                            </div>
-                                            <div class="cart_remove">
-                                                <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
-                                                        class="ion-android-close"></i></a>
-                                            </div>
-                                        </div><?php endforeach;?>
+                                                </div>
+                                                <div class="cart_remove">
+                                                    <a href="cart.php?delete_id=<?= $gh['id'] ?>"><i
+                                                            class="ion-android-close"></i></a>
+                                                </div>
+                                            </div><?php endforeach; ?>
                                         <div class="cart__table">
                                             <table>
                                                 <tbody>
@@ -231,7 +245,7 @@ if (isset($_SESSION['user'])) {
 
                                                     <tr>
                                                         <td class="text-left">Tổng cộng :</td>
-                                                       <td class="text-right"><?= number_format($tongTien) ?>đ</td>
+                                                        <td class="text-right"><?= number_format($tongTien) ?>đ</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -362,45 +376,13 @@ if (isset($_SESSION['user'])) {
                             <div class="widget_list widget_categories">
                                 <h2>Danh mục sản phẩm</h2>
                                 <ul>
+                                    <li><a href="products.php">Tất cả sản phẩm</a></li>
                                     <?php foreach ($danhMucList as $dm): ?>
                                         <li>
-                                            <a href="?danhmuc=<?= $dm['id'] ?>">
-                                                <?= htmlspecialchars($dm['tenDanhMuc']) ?>
-                                            </a>
+                                        <li><a href="products.php?danhmuc=<?= $dm['id'] ?>"><?= $dm['tenDanhMuc'] ?></a></li>
                                         </li>
                                     <?php endforeach; ?>
                                 </ul>
-                            </div>
-                            <!-- Nhà sản xuất -->
-                            <div class="widget_list widget_categories">
-                                <h2>Thương hiệu</h2>
-                                <ul>
-                                    <li><a href="#">Calvin Klein <span>6</span></a></li>
-                                    <li><a href="#">Chanel <span>10</span></a></li>
-                                    <li><a href="#">Christian Dior <span>4</span></a></li>
-                                    <li><a href="#">Ferragamo <span>4</span></a></li>
-                                    <li><a href="#">Hermes <span>10</span></a></li>
-                                    <li><a href="#">Louis Vuitton <span>8</span></a></li>
-                                    <li><a href="#">Tommy Hilfiger <span>7</span></a></li>
-                                    <li><a href="#">Versace <span>6</span></a></li>
-                                </ul>
-                            </div>
-                            <!-- Thẻ phổ biến -->
-                            <div class="widget_list tag-cloud">
-                                <h2>Thẻ phổ biến</h2>
-                                <div class="tag_widget">
-                                    <ul>
-                                        <li><a href="#">Kem dưỡng</a></li>
-                                        <li><a href="#">Chì kẻ mày</a></li>
-                                        <li><a href="#">Kẻ mắt</a></li>
-                                        <li><a href="#">Phấn mắt</a></li>
-                                        <li><a href="#">Sữa dưỡng</a></li>
-                                        <li><a href="#">Mascara</a></li>
-                                        <li><a href="#">Dầu dưỡng</a></li>
-                                        <li><a href="#">Phấn phủ</a></li>
-                                        <li><a href="#">Dầu gội</a></li>
-                                    </ul>
-                                </div>
                             </div>
                         </div>
                         <!-- Kết thúc thanh bên -->
@@ -434,7 +416,7 @@ if (isset($_SESSION['user'])) {
                             </div>
 
                             <div class="page_amount">
-                                <p>Hiển thị 1–9 của 21 sản phẩm</p>
+                                <p>Hiển thị <?= $start ?>–<?= $end ?> của <?= $tongdong ?> sản phẩm</p>
                             </div>
                         </div>
                         <form action="" method="get">
